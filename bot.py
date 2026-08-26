@@ -2,8 +2,6 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-TOKEN = ""
-
 SERVER_ID = 1541335745753653248
 
 intents = discord.Intents.default()
@@ -28,9 +26,9 @@ class NOVA(commands.Bot):
 bot = NOVA()
 
 
-# =========================
+# ========================================
 # 메인 메뉴
-# =========================
+# ========================================
 
 class MainMenu(discord.ui.View):
 
@@ -39,10 +37,14 @@ class MainMenu(discord.ui.View):
         emoji="📚",
         style=discord.ButtonStyle.primary
     )
-    async def server_info(self, interaction, button):
+    async def server_info(
+        self,
+        interaction: discord.Interaction,
+        button: discord.ui.Button
+    ):
         await interaction.response.send_message(
             "📚 **서버 안내**\n\n"
-            "NOVA 서버에 오신 것을 환영합니다! 🤖\n"
+            "NOVA 서버에 오신 것을 환영합니다! 🤖\n\n"
             "서버 규칙과 이용 방법을 확인해주세요.",
             ephemeral=True
         )
@@ -52,7 +54,11 @@ class MainMenu(discord.ui.View):
         emoji="👤",
         style=discord.ButtonStyle.secondary
     )
-    async def user_info(self, interaction, button):
+    async def user_info(
+        self,
+        interaction: discord.Interaction,
+        button: discord.ui.Button
+    ):
         user = interaction.user
 
         await interaction.response.send_message(
@@ -67,10 +73,14 @@ class MainMenu(discord.ui.View):
         emoji="🎮",
         style=discord.ButtonStyle.success
     )
-    async def game_info(self, interaction, button):
+    async def game_info(
+        self,
+        interaction: discord.Interaction,
+        button: discord.ui.Button
+    ):
         await interaction.response.send_message(
             "🎮 **게임 기능**\n\n"
-            "게임 관련 기능을 준비하고 있어요!",
+            "VALORANT 관련 기능을 준비하고 있어요!",
             ephemeral=True
         )
 
@@ -79,7 +89,18 @@ class MainMenu(discord.ui.View):
         emoji="⚙️",
         style=discord.ButtonStyle.danger
     )
-    async def server_settings(self, interaction, button):
+    async def server_settings(
+        self,
+        interaction: discord.Interaction,
+        button: discord.ui.Button
+    ):
+        if not interaction.user.guild_permissions.administrator:
+            await interaction.response.send_message(
+                "❌ 관리자만 사용할 수 있는 기능입니다.",
+                ephemeral=True
+            )
+            return
+
         await interaction.response.send_message(
             "⚙️ **서버 설정**\n\n"
             "관리자 전용 기능을 준비하고 있어요!",
@@ -87,9 +108,9 @@ class MainMenu(discord.ui.View):
         )
 
 
-# =========================
+# ========================================
 # /메뉴
-# =========================
+# ========================================
 
 @bot.tree.command(
     name="메뉴",
@@ -120,7 +141,7 @@ async def menu(interaction: discord.Interaction):
 
     embed.add_field(
         name="🎮 게임 기능",
-        value="게임 관련 기능을 이용해요.",
+        value="VALORANT 관련 기능을 이용해요.",
         inline=True
     )
 
@@ -140,9 +161,9 @@ async def menu(interaction: discord.Interaction):
     )
 
 
-# =========================
+# ========================================
 # /공지
-# =========================
+# ========================================
 
 @bot.tree.command(
     name="공지",
@@ -203,13 +224,13 @@ async def notice(
     )
 
 
-# =========================
+# ========================================
 # /전적
-# =========================
+# ========================================
 
 @bot.tree.command(
     name="전적",
-    description="VALORANT 전적 조회 기능입니다."
+    description="VALORANT 전적을 조회합니다."
 )
 @app_commands.describe(
     닉네임="VALORANT 닉네임을 입력해주세요.",
@@ -257,8 +278,8 @@ async def valorant_stats(
     )
 
 
-# =========================
-# 봇 실행
-# =========================
+# ========================================
+# 봇 시작
+# ========================================
 
-bot.run(TOKEN)
+bot.run()
