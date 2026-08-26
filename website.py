@@ -52,7 +52,6 @@ a {
 .navbar {
     width: 100%;
     padding: 25px 7%;
-
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -133,28 +132,20 @@ a {
 .profile {
     max-width: 850px;
     margin: auto;
-
     display: flex;
     align-items: center;
     gap: 20px;
-
     padding: 30px;
-
     background: rgba(20,23,35,0.9);
-
     border: 1px solid #2a3044;
-
     border-radius: 22px;
-
     margin-bottom: 20px;
 }
 
 .avatar {
     width: 70px;
     height: 70px;
-
     border-radius: 50%;
-
     background:
         linear-gradient(
             135deg,
@@ -165,7 +156,6 @@ a {
     display: flex;
     align-items: center;
     justify-content: center;
-
     font-size: 32px;
 }
 
@@ -181,11 +171,8 @@ a {
 .rank-card {
     max-width: 850px;
     margin: auto;
-
     padding: 30px;
-
     border-radius: 22px;
-
     background:
         linear-gradient(
             135deg,
@@ -194,7 +181,6 @@ a {
         );
 
     border: 1px solid #303653;
-
     margin-bottom: 20px;
 }
 
@@ -217,24 +203,17 @@ a {
 .stats {
     max-width: 850px;
     margin: auto;
-
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-
     gap: 15px;
-
     margin-bottom: 20px;
 }
 
 .stat {
     padding: 25px;
-
     text-align: center;
-
     border-radius: 18px;
-
     background: rgba(20,23,35,0.85);
-
     border: 1px solid #252b3d;
 }
 
@@ -257,13 +236,9 @@ a {
 .matches {
     max-width: 850px;
     margin: auto;
-
     background: rgba(20,23,35,0.9);
-
     border: 1px solid #2a3044;
-
     border-radius: 22px;
-
     padding: 30px;
 }
 
@@ -275,13 +250,9 @@ a {
     display: flex;
     justify-content: space-between;
     align-items: center;
-
     padding: 18px;
-
     background: rgba(255,255,255,0.03);
-
     border-radius: 14px;
-
     margin-bottom: 10px;
 }
 
@@ -317,15 +288,10 @@ a {
 .connect-box {
     max-width: 850px;
     margin: 20px auto 0;
-
     padding: 25px;
-
     text-align: center;
-
     background: rgba(99,102,241,0.08);
-
     border: 1px solid rgba(124,131,255,0.2);
-
     border-radius: 18px;
 }
 
@@ -338,15 +304,10 @@ a {
 .page-box {
     max-width: 850px;
     margin: auto;
-
     padding: 35px;
-
     background: rgba(20,23,35,0.9);
-
     border: 1px solid #2a3044;
-
     border-radius: 22px;
-
     line-height: 1.8;
 }
 
@@ -366,15 +327,10 @@ a {
 .login-card {
     max-width: 650px;
     margin: 50px auto;
-
     padding: 40px;
-
     text-align: center;
-
     background: rgba(20,23,35,0.9);
-
     border: 1px solid #2a3044;
-
     border-radius: 22px;
 }
 
@@ -385,31 +341,20 @@ a {
 
 .notice {
     margin-top: 25px;
-
     padding: 20px;
-
     border-radius: 15px;
-
     background: rgba(99,102,241,0.08);
-
     border: 1px solid rgba(124,131,255,0.2);
-
     color: #b7bdd0;
-
     line-height: 1.7;
 }
 
 footer {
     margin-top: 80px;
-
     border-top: 1px solid #1e2230;
-
     text-align: center;
-
     padding: 35px;
-
     color: #62697b;
-
     font-size: 13px;
 }
 
@@ -1118,6 +1063,9 @@ def privacy():
 
 intents = discord.Intents.default()
 
+# 메시지 관련 기능을 사용할 경우 필요
+intents.message_content = True
+
 
 class NOVA(commands.Bot):
 
@@ -1127,6 +1075,23 @@ class NOVA(commands.Bot):
             command_prefix="!",
             intents=intents
         )
+
+    # =====================================================
+    # 로그인 완료 확인
+    # =====================================================
+
+    async def on_ready(self):
+
+        print("========================================")
+        print(f"🤖 로그인 완료: {self.user}")
+        print(f"🆔 봇 ID: {self.user.id}")
+        print(f"🌐 연결된 서버 수: {len(self.guilds)}")
+
+        for guild in self.guilds:
+            print(f"   └─ 서버: {guild.name} / {guild.id}")
+
+        print("========================================")
+
 
     async def setup_hook(self):
 
@@ -1217,6 +1182,7 @@ class MainMenu(discord.ui.View):
             ephemeral=True
         )
 
+
     @discord.ui.button(
         label="유저 정보",
         emoji="👤",
@@ -1237,6 +1203,7 @@ class MainMenu(discord.ui.View):
             ephemeral=True
         )
 
+
     @discord.ui.button(
         label="게임 기능",
         emoji="🎮",
@@ -1253,6 +1220,7 @@ class MainMenu(discord.ui.View):
             "VALORANT 관련 기능을 준비하고 있어요!",
             ephemeral=True
         )
+
 
     @discord.ui.button(
         label="서버 설정",
@@ -1471,6 +1439,8 @@ def run_bot():
         return
 
     try:
+
+        print("🔄 Discord 봇 연결을 시작합니다...")
 
         bot.run(TOKEN)
 
