@@ -52,6 +52,7 @@ a {
 .navbar {
     width: 100%;
     padding: 25px 7%;
+
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -146,6 +147,7 @@ a {
     width: 70px;
     height: 70px;
     border-radius: 50%;
+
     background:
         linear-gradient(
             135deg,
@@ -156,6 +158,7 @@ a {
     display: flex;
     align-items: center;
     justify-content: center;
+
     font-size: 32px;
 }
 
@@ -173,6 +176,7 @@ a {
     margin: auto;
     padding: 30px;
     border-radius: 22px;
+
     background:
         linear-gradient(
             135deg,
@@ -203,8 +207,10 @@ a {
 .stats {
     max-width: 850px;
     margin: auto;
+
     display: grid;
     grid-template-columns: repeat(4, 1fr);
+
     gap: 15px;
     margin-bottom: 20px;
 }
@@ -213,6 +219,7 @@ a {
     padding: 25px;
     text-align: center;
     border-radius: 18px;
+
     background: rgba(20,23,35,0.85);
     border: 1px solid #252b3d;
 }
@@ -236,6 +243,7 @@ a {
 .matches {
     max-width: 850px;
     margin: auto;
+
     background: rgba(20,23,35,0.9);
     border: 1px solid #2a3044;
     border-radius: 22px;
@@ -250,6 +258,7 @@ a {
     display: flex;
     justify-content: space-between;
     align-items: center;
+
     padding: 18px;
     background: rgba(255,255,255,0.03);
     border-radius: 14px;
@@ -288,8 +297,10 @@ a {
 .connect-box {
     max-width: 850px;
     margin: 20px auto 0;
+
     padding: 25px;
     text-align: center;
+
     background: rgba(99,102,241,0.08);
     border: 1px solid rgba(124,131,255,0.2);
     border-radius: 18px;
@@ -304,10 +315,13 @@ a {
 .page-box {
     max-width: 850px;
     margin: auto;
+
     padding: 35px;
+
     background: rgba(20,23,35,0.9);
     border: 1px solid #2a3044;
     border-radius: 22px;
+
     line-height: 1.8;
 }
 
@@ -327,8 +341,10 @@ a {
 .login-card {
     max-width: 650px;
     margin: 50px auto;
+
     padding: 40px;
     text-align: center;
+
     background: rgba(20,23,35,0.9);
     border: 1px solid #2a3044;
     border-radius: 22px;
@@ -341,19 +357,26 @@ a {
 
 .notice {
     margin-top: 25px;
+
     padding: 20px;
+
     border-radius: 15px;
+
     background: rgba(99,102,241,0.08);
     border: 1px solid rgba(124,131,255,0.2);
+
     color: #b7bdd0;
     line-height: 1.7;
 }
 
 footer {
     margin-top: 80px;
+
     border-top: 1px solid #1e2230;
     text-align: center;
+
     padding: 35px;
+
     color: #62697b;
     font-size: 13px;
 }
@@ -1063,9 +1086,6 @@ def privacy():
 
 intents = discord.Intents.default()
 
-# 메시지 관련 기능을 사용할 경우 필요
-intents.message_content = True
-
 
 class NOVA(commands.Bot):
 
@@ -1076,35 +1096,69 @@ class NOVA(commands.Bot):
             intents=intents
         )
 
-    # =====================================================
-    # 로그인 완료 확인
-    # =====================================================
-
-    async def on_ready(self):
-
-        print("========================================")
-        print(f"🤖 로그인 완료: {self.user}")
-        print(f"🆔 봇 ID: {self.user.id}")
-        print(f"🌐 연결된 서버 수: {len(self.guilds)}")
-
-        for guild in self.guilds:
-            print(f"   └─ 서버: {guild.name} / {guild.id}")
-
-        print("========================================")
-
-
     async def setup_hook(self):
 
-        server = discord.Object(id=SERVER_ID)
+        print("🔄 Discord 명령어 동기화를 시작합니다...")
 
-        self.tree.copy_global_to(guild=server)
+        try:
 
-        await self.tree.sync(guild=server)
+            server = discord.Object(id=SERVER_ID)
 
-        print("✅ 서버 전용 명령어 동기화 완료!")
+            self.tree.copy_global_to(
+                guild=server
+            )
+
+            await self.tree.sync(
+                guild=server
+            )
+
+            print("✅ 서버 전용 명령어 동기화 완료!")
+
+        except Exception as e:
+
+            print(
+                f"❌ 명령어 동기화 실패: {e}"
+            )
 
 
 bot = NOVA()
+
+
+# =========================================================
+# 봇 로그인 완료
+# =========================================================
+
+@bot.event
+async def on_ready():
+
+    print("=" * 50)
+
+    print("🔥🔥🔥 ON_READY 실행됨 🔥🔥🔥")
+
+    print(
+        f"🤖 봇 이름: {bot.user}"
+    )
+
+    print(
+        f"🆔 봇 ID: {bot.user.id}"
+    )
+
+    print(
+        f"🌐 연결된 서버 수: {len(bot.guilds)}"
+    )
+
+    for guild in bot.guilds:
+
+        print(
+            f"📌 서버 연결 확인: "
+            f"{guild.name} / {guild.id}"
+        )
+
+    print(
+        "🔥🔥🔥 NOVA 정상 로그인 완료 🔥🔥🔥"
+    )
+
+    print("=" * 50)
 
 
 # =========================================================
@@ -1359,7 +1413,9 @@ async def notice(
 
     embed.add_field(
         name="📅 작성일",
-        value=f"<t:{int(discord.utils.utcnow().timestamp())}:D>",
+        value=(
+            f"<t:{int(discord.utils.utcnow().timestamp())}:D>"
+        ),
         inline=True
     )
 
@@ -1438,15 +1494,17 @@ def run_bot():
 
         return
 
-    try:
+    print("🔄 Discord 봇 연결을 시작합니다...")
 
-        print("🔄 Discord 봇 연결을 시작합니다...")
+    try:
 
         bot.run(TOKEN)
 
     except Exception as e:
 
-        print(f"❌ Discord 봇 실행 오류: {e}")
+        print(
+            f"❌ Discord 봇 실행 오류: {e}"
+        )
 
 
 # =========================================================
