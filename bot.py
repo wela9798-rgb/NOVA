@@ -1,13 +1,25 @@
+import os
 import discord
 from discord import app_commands
 from discord.ext import commands
+
+# ========================================
+# 설정
+# ========================================
+
+TOKEN = os.getenv("DISCORD_TOKEN")
 
 SERVER_ID = 1541335745753653248
 
 intents = discord.Intents.default()
 
 
+# ========================================
+# NOVA 봇
+# ========================================
+
 class NOVA(commands.Bot):
+
     def __init__(self):
         super().__init__(
             command_prefix="!",
@@ -15,9 +27,11 @@ class NOVA(commands.Bot):
         )
 
     async def setup_hook(self):
+
         server = discord.Object(id=SERVER_ID)
 
         self.tree.copy_global_to(guild=server)
+
         await self.tree.sync(guild=server)
 
         print("서버 전용 명령어 동기화 완료!")
@@ -27,7 +41,7 @@ bot = NOVA()
 
 
 # ========================================
-# 메인 메뉴
+# 메인 메뉴 버튼
 # ========================================
 
 class MainMenu(discord.ui.View):
@@ -42,12 +56,14 @@ class MainMenu(discord.ui.View):
         interaction: discord.Interaction,
         button: discord.ui.Button
     ):
+
         await interaction.response.send_message(
             "📚 **서버 안내**\n\n"
             "NOVA 서버에 오신 것을 환영합니다! 🤖\n\n"
             "서버 규칙과 이용 방법을 확인해주세요.",
             ephemeral=True
         )
+
 
     @discord.ui.button(
         label="유저 정보",
@@ -59,6 +75,7 @@ class MainMenu(discord.ui.View):
         interaction: discord.Interaction,
         button: discord.ui.Button
     ):
+
         user = interaction.user
 
         await interaction.response.send_message(
@@ -67,6 +84,7 @@ class MainMenu(discord.ui.View):
             f"아이디: {user.id}",
             ephemeral=True
         )
+
 
     @discord.ui.button(
         label="게임 기능",
@@ -78,11 +96,13 @@ class MainMenu(discord.ui.View):
         interaction: discord.Interaction,
         button: discord.ui.Button
     ):
+
         await interaction.response.send_message(
             "🎮 **게임 기능**\n\n"
             "VALORANT 관련 기능을 준비하고 있어요!",
             ephemeral=True
         )
+
 
     @discord.ui.button(
         label="서버 설정",
@@ -94,12 +114,16 @@ class MainMenu(discord.ui.View):
         interaction: discord.Interaction,
         button: discord.ui.Button
     ):
+
         if not interaction.user.guild_permissions.administrator:
+
             await interaction.response.send_message(
                 "❌ 관리자만 사용할 수 있는 기능입니다.",
                 ephemeral=True
             )
+
             return
+
 
         await interaction.response.send_message(
             "⚙️ **서버 설정**\n\n"
@@ -116,7 +140,9 @@ class MainMenu(discord.ui.View):
     name="메뉴",
     description="NOVA 메인 메뉴를 엽니다."
 )
-async def menu(interaction: discord.Interaction):
+async def menu(
+    interaction: discord.Interaction
+):
 
     embed = discord.Embed(
         title="🤖 NOVA",
@@ -127,11 +153,13 @@ async def menu(interaction: discord.Interaction):
         color=0x5865F2
     )
 
+
     embed.add_field(
         name="📚 서버 안내",
         value="서버 이용 방법을 확인해요.",
         inline=True
     )
+
 
     embed.add_field(
         name="👤 유저 정보",
@@ -139,11 +167,13 @@ async def menu(interaction: discord.Interaction):
         inline=True
     )
 
+
     embed.add_field(
         name="🎮 게임 기능",
         value="VALORANT 관련 기능을 이용해요.",
         inline=True
     )
+
 
     embed.add_field(
         name="⚙️ 서버 설정",
@@ -151,9 +181,11 @@ async def menu(interaction: discord.Interaction):
         inline=True
     )
 
+
     embed.set_footer(
         text="NOVA • 함께 만들어가는 서버"
     )
+
 
     await interaction.response.send_message(
         embed=embed,
@@ -174,7 +206,9 @@ async def menu(interaction: discord.Interaction):
     내용="공지 내용을 입력해주세요.",
     사진="공지에 넣을 사진을 첨부해주세요."
 )
-@app_commands.default_permissions(administrator=True)
+@app_commands.default_permissions(
+    administrator=True
+)
 async def notice(
     interaction: discord.Interaction,
     제목: str,
@@ -189,13 +223,19 @@ async def notice(
         timestamp=discord.utils.utcnow()
     )
 
+
     if 사진:
-        embed.set_image(url=사진.url)
+
+        embed.set_image(
+            url=사진.url
+        )
+
 
     embed.set_author(
         name=interaction.user.display_name,
         icon_url=interaction.user.display_avatar.url
     )
+
 
     embed.add_field(
         name="📌 NOVA 안내",
@@ -203,11 +243,13 @@ async def notice(
         inline=False
     )
 
+
     embed.add_field(
         name="👤 작성자",
         value=interaction.user.mention,
         inline=True
     )
+
 
     embed.add_field(
         name="📅 작성일",
@@ -215,9 +257,11 @@ async def notice(
         inline=True
     )
 
+
     embed.set_footer(
         text="NOVA • 함께 만들어가는 서버 🤖"
     )
+
 
     await interaction.response.send_message(
         embed=embed
@@ -251,11 +295,13 @@ async def valorant_stats(
         color=0x5865F2
     )
 
+
     embed.add_field(
         name="🏆 현재 티어",
         value="준비 중",
         inline=True
     )
+
 
     embed.add_field(
         name="📊 승률",
@@ -263,15 +309,18 @@ async def valorant_stats(
         inline=True
     )
 
+
     embed.add_field(
         name="⚔️ 최근 경기",
         value="준비 중",
         inline=True
     )
 
+
     embed.set_footer(
         text="NOVA • VALORANT"
     )
+
 
     await interaction.response.send_message(
         embed=embed
@@ -282,4 +331,10 @@ async def valorant_stats(
 # 봇 시작
 # ========================================
 
-bot.run()
+if not TOKEN:
+
+    print("❌ DISCORD_TOKEN 환경변수가 설정되지 않았습니다.")
+
+else:
+
+    bot.run(TOKEN)
