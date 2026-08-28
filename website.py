@@ -1,11 +1,8 @@
 import os
-import threading
 
 from flask import Flask, render_template_string
-import discord
-from discord.ext import commands
 
-app = Flask(**name**)
+app = Flask("nova")
 
 HTML = """
 
@@ -18,7 +15,8 @@ HTML = """
 ```
 <meta charset="UTF-8">
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
 
 <title>NOVA | VALORANT 티어 인증</title>
 
@@ -113,6 +111,7 @@ HTML = """
 
     h1 {
         font-size: clamp(42px, 7vw, 78px);
+
         font-weight: 900;
         line-height: 1.08;
 
@@ -125,6 +124,7 @@ HTML = """
 
     .hero-text {
         max-width: 720px;
+
         margin: 0 auto;
 
         color: #a7a7b7;
@@ -147,7 +147,8 @@ HTML = """
     .card {
         padding: 30px;
 
-        background: rgba(255,255,255,0.035);
+        background:
+            rgba(255,255,255,0.035);
 
         border: 1px solid #292936;
         border-radius: 18px;
@@ -159,6 +160,7 @@ HTML = """
 
     .card:hover {
         transform: translateY(-4px);
+
         border-color: #414152;
     }
 
@@ -210,6 +212,7 @@ HTML = """
 
     .steps {
         display: grid;
+
         gap: 12px;
 
         margin-top: 22px;
@@ -220,9 +223,11 @@ HTML = """
         align-items: center;
 
         gap: 14px;
+
         padding: 15px;
 
-        background: rgba(0,0,0,0.2);
+        background:
+            rgba(0,0,0,0.2);
 
         border-radius: 12px;
 
@@ -244,6 +249,7 @@ HTML = """
         border-radius: 50%;
 
         background: #ff4655;
+
         color: #ffffff;
 
         font-weight: 800;
@@ -252,12 +258,14 @@ HTML = """
 
     .notice {
         margin-bottom: 70px;
+
         padding: 30px;
 
         border: 1px solid #292936;
         border-radius: 18px;
 
-        background: rgba(255,255,255,0.025);
+        background:
+            rgba(255,255,255,0.025);
     }
 
     .notice h2 {
@@ -275,7 +283,8 @@ HTML = """
     footer {
         padding: 30px 0;
 
-        border-top: 1px solid #242430;
+        border-top:
+            1px solid #242430;
 
         text-align: center;
 
@@ -326,6 +335,7 @@ HTML = """
         NOVA
     </div>
 
+
     <div class="status">
 
         <span class="status-dot"></span>
@@ -339,9 +349,11 @@ HTML = """
 
 <section class="hero">
 
+
     <div class="badge">
         VALORANT COMMUNITY SERVICE
     </div>
+
 
     <h1>
 
@@ -353,6 +365,7 @@ HTML = """
 
     </h1>
 
+
     <p class="hero-text">
 
         NOVA는 VALORANT 플레이어가
@@ -362,6 +375,7 @@ HTML = """
         개발 중인 커뮤니티 서비스입니다.
 
     </p>
+
 
 </section>
 
@@ -440,9 +454,11 @@ HTML = """
 
 <section class="verification">
 
+
     <h2>
         티어 인증 절차
     </h2>
+
 
     <p>
 
@@ -502,14 +518,17 @@ HTML = """
 
     </div>
 
+
 </section>
 
 
 <section class="notice">
 
+
     <h2>
         Riot Games API 이용 안내
     </h2>
+
 
     <p>
 
@@ -539,6 +558,7 @@ HTML = """
 
     </p>
 
+
 </section>
 
 
@@ -567,24 +587,6 @@ def home():
 return render_template_string(HTML)
 ```
 
-intents = discord.Intents.default()
-
-intents.message_content = True
-
-bot = commands.Bot(
-command_prefix="!",
-intents=intents
-)
-
-@bot.event
-async def on_ready():
-
-```
-print(
-    f"NOVA Bot 로그인 완료: {bot.user}"
-)
-```
-
 def run_web():
 
 ```
@@ -601,27 +603,8 @@ app.run(
 )
 ```
 
-if **name** == "**main**":
+if **name** == "main":
 
 ```
-web_thread = threading.Thread(
-    target=run_web,
-    daemon=True
-)
-
-web_thread.start()
-
-token = os.environ.get(
-    "DISCORD_TOKEN"
-)
-
-if not token:
-
-    print(
-        "DISCORD_TOKEN 환경변수가 없습니다."
-    )
-
-else:
-
-    bot.run(token)
+run_web()
 ```
