@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template_string, request
+from flask import Flask, render_template_string, send_from_directory
 
 app = Flask(__name__)
 
@@ -361,6 +361,19 @@ def verify():
     return render_template_string(
         HTML,
         verified=True
+    )
+
+
+# =========================================================
+# RIOT API PRODUCT VERIFICATION
+# =========================================================
+
+@app.route("/riot.txt")
+def riot_verification():
+    return send_from_directory(
+        os.path.dirname(os.path.abspath(__file__)),
+        "riot.txt",
+        mimetype="text/plain"
     )
 
 
