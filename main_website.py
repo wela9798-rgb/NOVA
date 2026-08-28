@@ -13,7 +13,6 @@ HTML = """
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>NOVA | VALORANT Community</title>
 
 <style>
@@ -24,8 +23,7 @@ HTML = """
 body {
     margin: 0;
     font-family: Arial, sans-serif;
-    background:
-        radial-gradient(circle at top, #202040 0%, #0b0b16 45%, #050509 100%);
+    background: #08080f;
     color: white;
     min-height: 100vh;
 }
@@ -52,9 +50,8 @@ nav {
     text-decoration: none;
     color: white;
     padding: 12px 20px;
-    border: 1px solid rgba(255,255,255,.15);
     border-radius: 12px;
-    background: rgba(255,255,255,.06);
+    background: #151522;
 }
 
 .hero {
@@ -66,8 +63,7 @@ nav {
     display: inline-block;
     padding: 8px 14px;
     border-radius: 999px;
-    background: rgba(120,100,255,.15);
-    border: 1px solid rgba(120,100,255,.3);
+    background: #17152d;
     color: #b9adff;
     font-size: 14px;
     margin-bottom: 24px;
@@ -101,17 +97,11 @@ h1 {
     border-radius: 14px;
     font-weight: bold;
     background: #665cff;
-    transition: transform .2s, opacity .2s;
-}
-
-.button:hover {
-    transform: translateY(-2px);
-    opacity: .9;
 }
 
 .button.secondary {
-    background: rgba(255,255,255,.08);
-    border: 1px solid rgba(255,255,255,.15);
+    background: #151522;
+    border: 1px solid #29293a;
 }
 
 .features {
@@ -124,8 +114,8 @@ h1 {
 .card {
     padding: 28px;
     border-radius: 20px;
-    background: rgba(255,255,255,.055);
-    border: 1px solid rgba(255,255,255,.09);
+    background: #11111b;
+    border: 1px solid #222232;
 }
 
 .icon {
@@ -145,7 +135,7 @@ footer {
     text-align: center;
     padding: 30px;
     color: #777788;
-    border-top: 1px solid rgba(255,255,255,.08);
+    border-top: 1px solid #222232;
 }
 
 @media (max-width: 800px) {
@@ -222,9 +212,7 @@ footer {
 ```
 <div class="card">
     <div class="icon">🎮</div>
-
     <h2>VALORANT Community</h2>
-
     <p>
         VALORANT를 함께 즐기고
         파티를 모집하며 새로운 사람들과
@@ -234,9 +222,7 @@ footer {
 
 <div class="card">
     <div class="icon">🏆</div>
-
     <h2>Tier Verification</h2>
-
     <p>
         Riot 계정 인증을 통해
         VALORANT 경쟁전 티어를 인증하는
@@ -246,9 +232,7 @@ footer {
 
 <div class="card">
     <div class="icon">🤖</div>
-
     <h2>NOVA Bot</h2>
-
     <p>
         NOVA Discord 서버에서
         티어 인증과 다양한 커뮤니티 기능을
