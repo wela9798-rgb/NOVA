@@ -1,6 +1,6 @@
 from flask import Flask
 
-app = Flask(**name**)
+app = Flask(__name__)
 
 DISCORD_URL = "https://discord.gg/gHfjAj96r"
 
