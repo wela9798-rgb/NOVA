@@ -1,340 +1,288 @@
+```python
 import os
 import discord
-from discord import app_commands
 from discord.ext import commands
 
-# ========================================
-# 설정
-# ========================================
+
+# =========================================================
+# NOVA DISCORD BOT
+# VALORANT TIER VERIFICATION PROTOTYPE
+# =========================================================
+
+
+# =========================================================
+# 환경변수
+# =========================================================
 
 TOKEN = os.getenv("DISCORD_TOKEN")
 
-SERVER_ID = 1541335745753653248
+# NOVA Discord 서버 ID
+GUILD_ID = 1541335745753653248
+
+# NOVA 사이트
+WEBSITE_URL = "https://nova-fo0d.onrender.com"
+
+
+# =========================================================
+# TOKEN 확인
+# =========================================================
+
+if not TOKEN:
+    raise RuntimeError(
+        "DISCORD_TOKEN 환경변수가 설정되어 있지 않습니다."
+    )
+
+
+# =========================================================
+# Intents
+# =========================================================
 
 intents = discord.Intents.default()
 
-
-# ========================================
-# NOVA 봇
-# ========================================
-
-class NOVA(commands.Bot):
-
-    def __init__(self):
-        super().__init__(
-            command_prefix="!",
-            intents=intents
-        )
-
-    async def setup_hook(self):
-
-        server = discord.Object(id=SERVER_ID)
-
-        self.tree.copy_global_to(guild=server)
-
-        await self.tree.sync(guild=server)
-
-        print("서버 전용 명령어 동기화 완료!")
+# 필요할 경우 사용
+intents.guilds = True
+intents.members = True
 
 
-bot = NOVA()
+# =========================================================
+# Bot
+# =========================================================
+
+bot = commands.Bot(
+    command_prefix="!",
+    intents=intents
+)
 
 
-# ========================================
-# 메인 메뉴 버튼
-# ========================================
+# =========================================================
+# Bot 시작
+# =========================================================
 
-class MainMenu(discord.ui.View):
+@bot.event
+async def on_ready():
 
-    @discord.ui.button(
-        label="서버 안내",
-        emoji="📚",
-        style=discord.ButtonStyle.primary
-    )
-    async def server_info(
-        self,
-        interaction: discord.Interaction,
-        button: discord.ui.Button
-    ):
+    print("----------------------------------------")
+    print("NOVA Bot Online")
+    print(f"Bot Name : {bot.user}")
+    print(f"Bot ID   : {bot.user.id}")
+    print("----------------------------------------")
 
-        await interaction.response.send_message(
-            "📚 **서버 안내**\n\n"
-            "NOVA 서버에 오신 것을 환영합니다! 🤖\n\n"
-            "서버 규칙과 이용 방법을 확인해주세요.",
-            ephemeral=True
-        )
+    try:
 
+        guild = discord.Object(id=GUILD_ID)
 
-    @discord.ui.button(
-        label="유저 정보",
-        emoji="👤",
-        style=discord.ButtonStyle.secondary
-    )
-    async def user_info(
-        self,
-        interaction: discord.Interaction,
-        button: discord.ui.Button
-    ):
+        # 현재 NOVA 서버에 Slash Command 동기화
+        synced = await bot.tree.sync(guild=guild)
 
-        user = interaction.user
+        print(f"Slash Commands Synced : {len(synced)}")
 
-        await interaction.response.send_message(
-            f"👤 **유저 정보**\n\n"
-            f"닉네임: {user.display_name}\n"
-            f"아이디: {user.id}",
-            ephemeral=True
-        )
+        for command in synced:
+            print(f" - /{command.name}")
+
+    except Exception as e:
+
+        print("Slash Command Sync Error:")
+        print(e)
 
 
-    @discord.ui.button(
-        label="게임 기능",
-        emoji="🎮",
-        style=discord.ButtonStyle.success
-    )
-    async def game_info(
-        self,
-        interaction: discord.Interaction,
-        button: discord.ui.Button
-    ):
-
-        await interaction.response.send_message(
-            "🎮 **게임 기능**\n\n"
-            "VALORANT 관련 기능을 준비하고 있어요!",
-            ephemeral=True
-        )
-
-
-    @discord.ui.button(
-        label="서버 설정",
-        emoji="⚙️",
-        style=discord.ButtonStyle.danger
-    )
-    async def server_settings(
-        self,
-        interaction: discord.Interaction,
-        button: discord.ui.Button
-    ):
-
-        if not interaction.user.guild_permissions.administrator:
-
-            await interaction.response.send_message(
-                "❌ 관리자만 사용할 수 있는 기능입니다.",
-                ephemeral=True
-            )
-
-            return
-
-
-        await interaction.response.send_message(
-            "⚙️ **서버 설정**\n\n"
-            "관리자 전용 기능을 준비하고 있어요!",
-            ephemeral=True
-        )
-
-
-# ========================================
-# /메뉴
-# ========================================
+# =========================================================
+# /티어인증
+# =========================================================
 
 @bot.tree.command(
-    name="메뉴",
-    description="NOVA 메인 메뉴를 엽니다."
+    name="티어인증",
+    description="NOVA에서 VALORANT 티어 인증을 진행합니다.",
+    guild=discord.Object(id=GUILD_ID)
 )
-async def menu(
+async def tier_verify(
     interaction: discord.Interaction
 ):
 
     embed = discord.Embed(
-        title="🤖 NOVA",
+        title="NOVA  |  VALORANT 티어 인증",
         description=(
-            "안녕하세요! **NOVA**입니다.\n\n"
-            "아래 메뉴에서 원하는 기능을 선택해주세요."
+            "NOVA 서버에서 VALORANT 티어를 인증하려면\n"
+            "아래 **Riot 계정 인증하기** 버튼을 눌러주세요."
         ),
-        color=0x5865F2
+        color=discord.Color.blurple()
     )
-
 
     embed.add_field(
-        name="📚 서버 안내",
-        value="서버 이용 방법을 확인해요.",
-        inline=True
-    )
-
-
-    embed.add_field(
-        name="👤 유저 정보",
-        value="내 디스코드 정보를 확인해요.",
-        inline=True
-    )
-
-
-    embed.add_field(
-        name="🎮 게임 기능",
-        value="VALORANT 관련 기능을 이용해요.",
-        inline=True
-    )
-
-
-    embed.add_field(
-        name="⚙️ 서버 설정",
-        value="서버 관리 기능이에요.",
-        inline=True
-    )
-
-
-    embed.set_footer(
-        text="NOVA • 함께 만들어가는 서버"
-    )
-
-
-    await interaction.response.send_message(
-        embed=embed,
-        view=MainMenu()
-    )
-
-
-# ========================================
-# /공지
-# ========================================
-
-@bot.tree.command(
-    name="공지",
-    description="사진과 함께 예쁜 공지를 작성합니다."
-)
-@app_commands.describe(
-    제목="공지 제목을 입력해주세요.",
-    내용="공지 내용을 입력해주세요.",
-    사진="공지에 넣을 사진을 첨부해주세요."
-)
-@app_commands.default_permissions(
-    administrator=True
-)
-async def notice(
-    interaction: discord.Interaction,
-    제목: str,
-    내용: str,
-    사진: discord.Attachment = None
-):
-
-    embed = discord.Embed(
-        title="📢 NOVA 서버 공지",
-        description=f"## ✨ {제목}\n\n{내용}",
-        color=0x5865F2,
-        timestamp=discord.utils.utcnow()
-    )
-
-
-    if 사진:
-
-        embed.set_image(
-            url=사진.url
-        )
-
-
-    embed.set_author(
-        name=interaction.user.display_name,
-        icon_url=interaction.user.display_avatar.url
-    )
-
-
-    embed.add_field(
-        name="📌 NOVA 안내",
-        value="서버 이용에 참고해주세요!",
+        name="🔐 인증 방식",
+        value="Riot Sign On (RSO)",
         inline=False
     )
 
-
     embed.add_field(
-        name="👤 작성자",
-        value=interaction.user.mention,
+        name="🎮 게임",
+        value="VALORANT",
         inline=True
     )
 
-
     embed.add_field(
-        name="📅 작성일",
-        value=f"<t:{int(discord.utils.utcnow().timestamp())}:D>",
+        name="🛡️ 개인정보",
+        value=(
+            "Riot 계정 인증 과정에서 사용자의 동의가 필요합니다."
+        ),
         inline=True
     )
-
 
     embed.set_footer(
-        text="NOVA • 함께 만들어가는 서버 🤖"
+        text="NOVA Tier Verification"
     )
 
+    # -----------------------------------------------------
+    # 버튼
+    # -----------------------------------------------------
+
+    view = discord.ui.View()
+
+    button = discord.ui.Button(
+        label="Riot 계정 인증하기",
+        style=discord.ButtonStyle.link,
+        url=f"{WEBSITE_URL}/riot-login"
+    )
+
+    view.add_item(button)
 
     await interaction.response.send_message(
-        embed=embed
+        embed=embed,
+        view=view,
+        ephemeral=True
     )
 
 
-# ========================================
-# /전적
-# ========================================
+# =========================================================
+# /노바
+# =========================================================
 
 @bot.tree.command(
-    name="전적",
-    description="VALORANT 전적을 조회합니다."
+    name="노바",
+    description="NOVA 봇 정보를 확인합니다.",
+    guild=discord.Object(id=GUILD_ID)
 )
-@app_commands.describe(
-    닉네임="VALORANT 닉네임을 입력해주세요.",
-    태그="VALORANT 태그를 입력해주세요."
-)
-async def valorant_stats(
-    interaction: discord.Interaction,
-    닉네임: str,
-    태그: str
+async def nova_info(
+    interaction: discord.Interaction
 ):
 
     embed = discord.Embed(
-        title="🎮 VALORANT 전적",
+        title="🌌 NOVA",
         description=(
-            f"**{닉네임}#{태그}**\n\n"
-            "⏳ 현재 전적 조회 시스템을 준비하고 있습니다."
+            "한국 VALORANT 커뮤니티 NOVA의 전용 봇입니다.\n\n"
+            "VALORANT 티어 인증 및 커뮤니티 기능을 제공합니다."
         ),
-        color=0x5865F2
+        color=discord.Color.blurple()
     )
 
-
     embed.add_field(
-        name="🏆 현재 티어",
-        value="준비 중",
+        name="🎮 게임",
+        value="VALORANT",
         inline=True
     )
 
-
     embed.add_field(
-        name="📊 승률",
-        value="준비 중",
+        name="🔐 티어 인증",
+        value="/티어인증",
         inline=True
     )
 
-
     embed.add_field(
-        name="⚔️ 최근 경기",
-        value="준비 중",
-        inline=True
+        name="🌐 Website",
+        value=WEBSITE_URL,
+        inline=False
     )
-
 
     embed.set_footer(
-        text="NOVA • VALORANT"
+        text="NOVA Community"
     )
-
 
     await interaction.response.send_message(
         embed=embed
     )
 
 
-# ========================================
-# 봇 시작
-# ========================================
+# =========================================================
+# /사이트
+# =========================================================
 
-if not TOKEN:
+@bot.tree.command(
+    name="사이트",
+    description="NOVA 인증 사이트 링크를 표시합니다.",
+    guild=discord.Object(id=GUILD_ID)
+)
+async def website(
+    interaction: discord.Interaction
+):
 
-    print("❌ DISCORD_TOKEN 환경변수가 설정되지 않았습니다.")
+    view = discord.ui.View()
 
-else:
+    button = discord.ui.Button(
+        label="NOVA 인증 사이트",
+        style=discord.ButtonStyle.link,
+        url=WEBSITE_URL
+    )
 
-    bot.run(TOKEN)
+    view.add_item(button)
+
+    await interaction.response.send_message(
+        "🌐 **NOVA 인증 사이트**",
+        view=view,
+        ephemeral=True
+    )
+
+
+# =========================================================
+# /도움말
+# =========================================================
+
+@bot.tree.command(
+    name="도움말",
+    description="NOVA 봇의 명령어를 확인합니다.",
+    guild=discord.Object(id=GUILD_ID)
+)
+async def help_command(
+    interaction: discord.Interaction
+):
+
+    embed = discord.Embed(
+        title="🌌 NOVA Bot",
+        description="사용 가능한 명령어입니다.",
+        color=discord.Color.blurple()
+    )
+
+    embed.add_field(
+        name="🎮 /티어인증",
+        value="VALORANT 티어 인증을 시작합니다.",
+        inline=False
+    )
+
+    embed.add_field(
+        name="🌐 /사이트",
+        value="NOVA 인증 사이트를 확인합니다.",
+        inline=False
+    )
+
+    embed.add_field(
+        name="ℹ️ /노바",
+        value="NOVA 봇 정보를 확인합니다.",
+        inline=False
+    )
+
+    embed.add_field(
+        name="❓ /도움말",
+        value="명령어 목록을 확인합니다.",
+        inline=False
+    )
+
+    await interaction.response.send_message(
+        embed=embed,
+        ephemeral=True
+    )
+
+
+# =========================================================
+# 봇 실행
+# =========================================================
+
+bot.run(TOKEN)
+```
