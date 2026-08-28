@@ -1,19 +1,22 @@
 from flask import Flask, render_template_string
 
-app = Flask(__name__)
+app = Flask(**name**)
+
+DISCORD_URL = "https://discord.gg/gHfjAj96r"
+VERIFY_URL = "https://nova-fo0d.onrender.com/riot-login"
 
 HTML = """
+
 <!DOCTYPE html>
+
 <html lang="ko">
 <head>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>NOVA | VALORANT Community</title>
 
 <style>
-
 * {
     box-sizing: border-box;
 }
@@ -98,6 +101,12 @@ h1 {
     border-radius: 14px;
     font-weight: bold;
     background: #665cff;
+    transition: transform .2s, opacity .2s;
+}
+
+.button:hover {
+    transform: translateY(-2px);
+    opacity: .9;
 }
 
 .button.secondary {
@@ -140,7 +149,6 @@ footer {
 }
 
 @media (max-width: 800px) {
-
     .features {
         grid-template-columns: 1fr;
     }
@@ -148,9 +156,7 @@ footer {
     .hero {
         padding-top: 70px;
     }
-
 }
-
 </style>
 
 </head>
@@ -160,127 +166,119 @@ footer {
 <div class="container">
 
 <nav>
+    <div class="logo">NOVA</div>
 
-<div class="logo">
-NOVA
-</div>
-
+```
 <a
-class="nav-button"
-href="https://discord.gg/DpDuPK7b4
-target="_blank">
-Discord
+    class="nav-button"
+    href="{{ discord_url }}"
+    target="_blank"
+    rel="noopener noreferrer">
+    Discord
 </a>
+```
 
 </nav>
 
-
 <section class="hero">
 
+```
 <div class="badge">
-KOREAN VALORANT COMMUNITY
+    KOREAN VALORANT COMMUNITY
 </div>
 
 <h1>NOVA</h1>
 
 <p>
-VALORANT를 좋아하는 사람들이 함께하는
-한국 커뮤니티입니다.<br>
-친목부터 파티 모집, 내전, 티어 인증까지
-NOVA에서 함께하세요.
+    VALORANT를 좋아하는 사람들이 함께하는
+    한국 커뮤니티입니다.<br>
+    친목부터 파티 모집, 내전, 티어 인증까지
+    NOVA에서 함께하세요.
 </p>
 
 <div class="buttons">
 
-<a
-class="button"
-href="https://discord.gg/여기에초대코드"
-target="_blank">
-NOVA Discord 입장
-</a>
+    <a
+        class="button"
+        href="{{ discord_url }}"
+        target="_blank"
+        rel="noopener noreferrer">
+        NOVA Discord 입장
+    </a>
 
-<a
-class="button secondary"
-href="https://nova-fo0d.onrender.com/riot-login">
-티어 인증
-</a>
+    <a
+        class="button secondary"
+        href="{{ verify_url }}">
+        티어 인증
+    </a>
 
 </div>
+```
 
 </section>
-
 
 <section class="features">
 
+```
 <div class="card">
+    <div class="icon">🎮</div>
 
-<div class="icon">🎮</div>
+    <h2>VALORANT Community</h2>
 
-<h2>VALORANT Community</h2>
-
-<p>
-VALORANT를 함께 즐기고
-파티를 모집하며 새로운 사람들과
-게임을 즐길 수 있는 커뮤니티입니다.
-</p>
-
+    <p>
+        VALORANT를 함께 즐기고
+        파티를 모집하며 새로운 사람들과
+        게임을 즐길 수 있는 커뮤니티입니다.
+    </p>
 </div>
 
-
 <div class="card">
+    <div class="icon">🏆</div>
 
-<div class="icon">🏆</div>
+    <h2>Tier Verification</h2>
 
-<h2>Tier Verification</h2>
-
-<p>
-Riot 계정 인증을 통해
-VALORANT 경쟁전 티어를 인증하는
-시스템을 준비하고 있습니다.
-</p>
-
+    <p>
+        Riot 계정 인증을 통해
+        VALORANT 경쟁전 티어를 인증하는
+        시스템을 준비하고 있습니다.
+    </p>
 </div>
 
-
 <div class="card">
+    <div class="icon">🤖</div>
 
-<div class="icon">🤖</div>
+    <h2>NOVA Bot</h2>
 
-<h2>NOVA Bot</h2>
-
-<p>
-NOVA Discord 서버에서
-티어 인증과 다양한 커뮤니티 기능을
-지원하는 전용 봇입니다.
-</p>
-
+    <p>
+        NOVA Discord 서버에서
+        티어 인증과 다양한 커뮤니티 기능을
+        지원하는 전용 봇입니다.
+    </p>
 </div>
+```
 
 </section>
 
 </div>
 
-
 <footer>
-
-NOVA Community · VALORANT
-
+    NOVA Community · VALORANT
 </footer>
 
 </body>
 </html>
 """
 
-
 @app.route("/")
 def home():
-    return render_template_string(HTML)
+return render_template_string(
+HTML,
+discord_url=DISCORD_URL,
+verify_url=VERIFY_URL
+)
 
-
-if __name__ == "__main__":
-
-    app.run(
-        host="0.0.0.0",
-        port=10000
-    )
-
+if **name** == "**main**":
+app.run(
+host="0.0.0.0",
+port=10000
+)
