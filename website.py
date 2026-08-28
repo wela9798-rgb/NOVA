@@ -5,21 +5,7 @@ from flask import Flask, render_template_string
 import discord
 from discord.ext import commands
 
-# =========================================================
-
-# NOVA - VALORANT TIER VERIFICATION PROTOTYPE
-
-# Riot Games API 심사용 프로토타입
-
-# =========================================================
-
 app = Flask(**name**)
-
-# =========================================================
-
-# NOVA 홈페이지
-
-# =========================================================
 
 HTML = """
 
@@ -32,10 +18,7 @@ HTML = """
 ```
 <meta charset="UTF-8">
 
-<meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>NOVA | VALORANT 티어 인증</title>
 
@@ -108,7 +91,6 @@ HTML = """
 
     .hero {
         text-align: center;
-
         padding: 100px 20px 80px;
     }
 
@@ -131,7 +113,6 @@ HTML = """
 
     h1 {
         font-size: clamp(42px, 7vw, 78px);
-
         font-weight: 900;
         line-height: 1.08;
 
@@ -144,7 +125,6 @@ HTML = """
 
     .hero-text {
         max-width: 720px;
-
         margin: 0 auto;
 
         color: #a7a7b7;
@@ -157,10 +137,7 @@ HTML = """
         display: grid;
 
         grid-template-columns:
-            repeat(
-                auto-fit,
-                minmax(250px, 1fr)
-            );
+            repeat(auto-fit, minmax(250px, 1fr));
 
         gap: 20px;
 
@@ -170,8 +147,7 @@ HTML = """
     .card {
         padding: 30px;
 
-        background:
-            rgba(255,255,255,0.035);
+        background: rgba(255,255,255,0.035);
 
         border: 1px solid #292936;
         border-radius: 18px;
@@ -183,19 +159,16 @@ HTML = """
 
     .card:hover {
         transform: translateY(-4px);
-
         border-color: #414152;
     }
 
     .icon {
         font-size: 30px;
-
         margin-bottom: 18px;
     }
 
     .card h2 {
         font-size: 20px;
-
         margin-bottom: 12px;
     }
 
@@ -208,7 +181,6 @@ HTML = """
 
     .verification {
         margin-bottom: 30px;
-
         padding: 35px;
 
         background:
@@ -226,7 +198,6 @@ HTML = """
 
     .verification h2 {
         font-size: 22px;
-
         margin-bottom: 15px;
     }
 
@@ -239,7 +210,6 @@ HTML = """
 
     .steps {
         display: grid;
-
         gap: 12px;
 
         margin-top: 22px;
@@ -250,11 +220,9 @@ HTML = """
         align-items: center;
 
         gap: 14px;
-
         padding: 15px;
 
-        background:
-            rgba(0,0,0,0.2);
+        background: rgba(0,0,0,0.2);
 
         border-radius: 12px;
 
@@ -276,7 +244,6 @@ HTML = """
         border-radius: 50%;
 
         background: #ff4655;
-
         color: #ffffff;
 
         font-weight: 800;
@@ -285,19 +252,16 @@ HTML = """
 
     .notice {
         margin-bottom: 70px;
-
         padding: 30px;
 
         border: 1px solid #292936;
         border-radius: 18px;
 
-        background:
-            rgba(255,255,255,0.025);
+        background: rgba(255,255,255,0.025);
     }
 
     .notice h2 {
         font-size: 20px;
-
         margin-bottom: 14px;
     }
 
@@ -311,8 +275,7 @@ HTML = """
     footer {
         padding: 30px 0;
 
-        border-top:
-            1px solid #242430;
+        border-top: 1px solid #242430;
 
         text-align: center;
 
@@ -363,7 +326,6 @@ HTML = """
         NOVA
     </div>
 
-
     <div class="status">
 
         <span class="status-dot"></span>
@@ -377,11 +339,9 @@ HTML = """
 
 <section class="hero">
 
-
     <div class="badge">
         VALORANT COMMUNITY SERVICE
     </div>
-
 
     <h1>
 
@@ -393,7 +353,6 @@ HTML = """
 
     </h1>
 
-
     <p class="hero-text">
 
         NOVA는 VALORANT 플레이어가
@@ -404,7 +363,6 @@ HTML = """
 
     </p>
 
-
 </section>
 
 
@@ -413,16 +371,13 @@ HTML = """
 
     <div class="card">
 
-
         <div class="icon">
             🏆
         </div>
 
-
         <h2>
             티어 인증
         </h2>
-
 
         <p>
 
@@ -433,22 +388,18 @@ HTML = """
 
         </p>
 
-
     </div>
 
 
     <div class="card">
 
-
         <div class="icon">
             🎮
         </div>
 
-
         <h2>
             VALORANT 연동
         </h2>
-
 
         <p>
 
@@ -459,22 +410,18 @@ HTML = """
 
         </p>
 
-
     </div>
 
 
     <div class="card">
 
-
         <div class="icon">
             💬
         </div>
 
-
         <h2>
             Discord 연동
         </h2>
-
 
         <p>
 
@@ -485,7 +432,6 @@ HTML = """
 
         </p>
 
-
     </div>
 
 
@@ -494,11 +440,9 @@ HTML = """
 
 <section class="verification">
 
-
     <h2>
         티어 인증 절차
     </h2>
-
 
     <p>
 
@@ -558,17 +502,14 @@ HTML = """
 
     </div>
 
-
 </section>
 
 
 <section class="notice">
 
-
     <h2>
         Riot Games API 이용 안내
     </h2>
-
 
     <p>
 
@@ -598,7 +539,6 @@ HTML = """
 
     </p>
 
-
 </section>
 
 
@@ -620,24 +560,12 @@ HTML = """
 </html>
 """
 
-# =========================================================
-
-# Flask Web Server
-
-# =========================================================
-
 @app.route("/")
 def home():
 
 ```
 return render_template_string(HTML)
 ```
-
-# =========================================================
-
-# Discord Bot
-
-# =========================================================
 
 intents = discord.Intents.default()
 
@@ -657,12 +585,6 @@ print(
 )
 ```
 
-# =========================================================
-
-# Flask 실행
-
-# =========================================================
-
 def run_web():
 
 ```
@@ -673,18 +595,11 @@ port = int(
     )
 )
 
-
 app.run(
     host="0.0.0.0",
     port=port
 )
 ```
-
-# =========================================================
-
-# 프로그램 시작
-
-# =========================================================
 
 if **name** == "**main**":
 
@@ -694,14 +609,11 @@ web_thread = threading.Thread(
     daemon=True
 )
 
-
 web_thread.start()
-
 
 token = os.environ.get(
     "DISCORD_TOKEN"
 )
-
 
 if not token:
 
