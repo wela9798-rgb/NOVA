@@ -1,54 +1,56 @@
+```python
 import os
 import threading
 
 from flask import Flask, render_template_string
+
 import discord
 from discord.ext import commands
 
 
 # =========================================================
 # NOVA - VALORANT TIER VERIFICATION PROTOTYPE
-# Riot Production API 심사용 프로토타입
+# Riot Games API 심사용 프로토타입
 # =========================================================
-
 
 app = Flask(__name__)
 
 
 # =========================================================
-# 기본 홈페이지
+# NOVA 웹사이트
 # =========================================================
 
 HTML = """
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
 
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
 
-    <title>NOVA | VALORANT Rank Verification</title>
+    <title>NOVA | VALORANT 티어 인증</title>
 
     <style>
-
         * {
             box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
 
         body {
-            margin: 0;
             font-family:
-                Arial,
-                Helvetica,
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
                 sans-serif;
 
             background:
                 linear-gradient(
                     135deg,
-                    #0b0d12 0%,
-                    #111827 50%,
-                    #080a0f 100%
+                    #0b0b12 0%,
+                    #11111d 50%,
+                    #171725 100%
                 );
 
             color: #ffffff;
@@ -56,1108 +58,263 @@ HTML = """
         }
 
         .container {
-            width: 100%;
-            max-width: 1000px;
+            width: 90%;
+            max-width: 1100px;
             margin: 0 auto;
-            padding: 40px 20px 70px;
         }
 
-        .top {
-            text-align: center;
-            margin-bottom: 45px;
+        header {
+            padding: 30px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .logo {
-            font-size: 48px;
-            font-weight: 900;
-            letter-spacing: 8px;
-            margin-bottom: 8px;
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: 3px;
         }
 
-        .subtitle {
-            color: #a7adbb;
-            font-size: 16px;
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #a8a8b8;
+            font-size: 14px;
         }
 
-        .prototype {
+        .dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: #43d17a;
+            box-shadow: 0 0 10px #43d17a;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 90px 20px 70px;
+        }
+
+        .badge {
             display: inline-block;
-            margin-top: 18px;
-            padding: 7px 14px;
-            border-radius: 20px;
+            padding: 8px 16px;
+            border: 1px solid #333345;
+            border-radius: 999px;
+            color: #b7b7c9;
+            font-size: 13px;
+            margin-bottom: 25px;
+            background: rgba(255,255,255,0.03);
+        }
 
-            background: rgba(255,255,255,0.08);
-            border: 1px solid rgba(255,255,255,0.15);
+        h1 {
+            font-size: clamp(42px, 7vw, 76px);
+            line-height: 1.05;
+            margin-bottom: 25px;
+            font-weight: 900;
+        }
 
-            color: #ffcc66;
-            font-size: 12px;
-            font-weight: bold;
-            letter-spacing: 1px;
+        .highlight {
+            color: #ff4655;
+        }
+
+        .description {
+            max-width: 700px;
+            margin: 0 auto;
+            color: #aaaabc;
+            font-size: 18px;
+            line-height: 1.8;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns:
+                repeat(auto-fit, minmax(250px, 1fr));
+
+            gap: 20px;
+            margin-bottom: 80px;
         }
 
         .card {
-            background: rgba(18, 22, 31, 0.94);
-
-            border: 1px solid
-                rgba(255,255,255,0.08);
-
-            border-radius: 20px;
-
-            padding: 32px;
-
-            box-shadow:
-                0 20px 60px
-                rgba(0,0,0,0.35);
-
-            margin-bottom: 25px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid #292939;
+            border-radius: 18px;
+            padding: 30px;
+            transition: 0.2s ease;
         }
 
-        .card h1 {
-            margin-top: 0;
-            font-size: 28px;
+        .card:hover {
+            transform: translateY(-4px);
+            border-color: #444458;
+        }
+
+        .icon {
+            font-size: 30px;
+            margin-bottom: 18px;
         }
 
         .card h2 {
             font-size: 20px;
-            margin-top: 0;
+            margin-bottom: 12px;
         }
 
         .card p {
-            color: #b8bfcc;
+            color: #9999aa;
             line-height: 1.7;
+            font-size: 14px;
         }
 
-        .button {
-            display: inline-block;
-
-            margin-top: 20px;
-
-            padding: 15px 25px;
-
-            border-radius: 10px;
-
-            background: #ffffff;
-            color: #111111;
-
-            text-decoration: none;
-
-            font-weight: 800;
-
-            transition:
-                transform 0.15s,
-                opacity 0.15s;
+        .notice {
+            background: rgba(255,70,85,0.06);
+            border: 1px solid rgba(255,70,85,0.25);
+            border-radius: 18px;
+            padding: 30px;
+            margin-bottom: 60px;
         }
 
-        .button:hover {
-            transform: translateY(-2px);
-            opacity: 0.9;
+        .notice h2 {
+            margin-bottom: 12px;
         }
 
-        .steps {
-            display: grid;
-
-            grid-template-columns:
-                repeat(5, 1fr);
-
-            gap: 12px;
-
-            margin-top: 25px;
+        .notice p {
+            color: #aaaabc;
+            line-height: 1.8;
+            font-size: 14px;
         }
 
-        .step {
-            padding: 20px 12px;
-
-            border-radius: 14px;
-
-            background:
-                rgba(255,255,255,0.04);
-
-            border:
-                1px solid
-                rgba(255,255,255,0.07);
-
-            text-align: center;
-        }
-
-        .number {
-            width: 35px;
-            height: 35px;
-
-            margin:
-                0 auto 12px;
-
-            border-radius: 50%;
-
-            display: flex;
-
-            align-items: center;
-            justify-content: center;
-
-            background: #ffffff;
-            color: #111111;
-
-            font-weight: 900;
-        }
-
-        .step-title {
+        footer {
+            border-top: 1px solid #252532;
+            padding: 30px 0;
+            color: #777789;
             font-size: 13px;
-            font-weight: bold;
-        }
-
-        .step-description {
-            margin-top: 7px;
-
-            color: #8f98a8;
-
-            font-size: 11px;
-
-            line-height: 1.5;
-        }
-
-        .verification {
-            margin-top: 25px;
-
-            padding: 22px;
-
-            border-radius: 15px;
-
-            background:
-                rgba(255,255,255,0.035);
-
-            border:
-                1px solid
-                rgba(255,255,255,0.08);
-        }
-
-        .verification-title {
-            font-weight: 800;
-            margin-bottom: 10px;
-        }
-
-        .status {
-            display: inline-block;
-
-            padding: 7px 12px;
-
-            border-radius: 20px;
-
-            background:
-                rgba(255,255,255,0.08);
-
-            color: #d7dce5;
-
-            font-size: 12px;
-
-            font-weight: bold;
-        }
-
-        .demo {
-            margin-top: 18px;
-
-            padding: 18px;
-
-            border-radius: 12px;
-
-            background:
-                rgba(255, 204, 102, 0.06);
-
-            border:
-                1px solid
-                rgba(255, 204, 102, 0.18);
-        }
-
-        .demo strong {
-            color: #ffcc66;
-        }
-
-        .rank {
-            margin-top: 15px;
-
-            font-size: 28px;
-
-            font-weight: 900;
-        }
-
-        .small {
-            font-size: 12px;
-            color: #7f8795;
-        }
-
-        .footer {
             text-align: center;
-
-            margin-top: 45px;
-
-            color: #737b89;
-
-            font-size: 12px;
-
-            line-height: 1.7;
         }
 
-        .links {
-            margin-top: 15px;
-        }
-
-        .links a {
-            color: #bfc6d3;
-            text-decoration: none;
-            margin: 0 8px;
-        }
-
-        .links a:hover {
-            text-decoration: underline;
-        }
-
-
-        @media (max-width: 800px) {
-
-            .steps {
-                grid-template-columns:
-                    repeat(2, 1fr);
+        @media (max-width: 600px) {
+            header {
+                padding: 20px 0;
             }
 
+            .hero {
+                padding-top: 60px;
+            }
+
+            .description {
+                font-size: 15px;
+            }
         }
-
-
-        @media (max-width: 500px) {
-
-            .container {
-                padding:
-                    25px 15px 50px;
-            }
-
-            .logo {
-                font-size: 36px;
-            }
-
-            .card {
-                padding: 22px;
-            }
-
-            .steps {
-                grid-template-columns:
-                    1fr;
-            }
-
-        }
-
     </style>
 </head>
 
-
 <body>
 
 <div class="container">
 
-    <div class="top">
+    <header>
+        <div class="logo">NOVA</div>
 
-        <div class="logo">
-            NOVA
+        <div class="status">
+            <span class="dot"></span>
+            서비스 정상 운영
         </div>
+    </header>
 
-        <div class="subtitle">
-            VALORANT Community Rank Verification
+
+    <section class="hero">
+
+        <div class="badge">
+            VALORANT COMMUNITY SERVICE
         </div>
-
-        <div class="prototype">
-            PRODUCTION APPLICATION PROTOTYPE
-        </div>
-
-    </div>
-
-
-    <!-- =====================================================
-         INTRODUCTION
-         ===================================================== -->
-
-    <div class="card">
 
         <h1>
-            VALORANT Rank Verification
+            NOVA와 함께하는<br>
+            <span class="highlight">VALORANT 티어 인증</span>
         </h1>
 
-        <p>
-            NOVA provides a community rank verification
-            system for VALORANT players.
+        <p class="description">
+            NOVA는 VALORANT 플레이어의 게임 정보를 확인하고
+            Discord 커뮤니티에서 보다 편리하게 티어를 인증할 수 있도록
+            개발 중인 커뮤니티 서비스입니다.
         </p>
 
-        <p>
-            Members can link their Riot Account through
-            Riot Sign On (RSO), verify their VALORANT
-            competitive rank, and use the verified result
-            within the NOVA Discord community.
-        </p>
-
-        <a
-            class="button"
-            href="/verify"
-        >
-            Start Rank Verification
-        </a>
-
-    </div>
+    </section>
 
 
-    <!-- =====================================================
-         USER FLOW
-         ===================================================== -->
+    <section class="cards">
 
-    <div class="card">
+        <div class="card">
+            <div class="icon">🏆</div>
 
-        <h2>
-            Verification Flow
-        </h2>
-
-        <p>
-            The following flow demonstrates how a NOVA
-            member will verify their VALORANT rank.
-        </p>
-
-
-        <div class="steps">
-
-
-            <div class="step">
-
-                <div class="number">
-                    1
-                </div>
-
-                <div class="step-title">
-                    Start
-                </div>
-
-                <div class="step-description">
-                    Begin the NOVA rank verification process.
-                </div>
-
-            </div>
-
-
-            <div class="step">
-
-                <div class="number">
-                    2
-                </div>
-
-                <div class="step-title">
-                    Riot Sign On
-                </div>
-
-                <div class="step-description">
-                    User opts in and securely links their Riot Account.
-                </div>
-
-            </div>
-
-
-            <div class="step">
-
-                <div class="number">
-                    3
-                </div>
-
-                <div class="step-title">
-                    Account
-                </div>
-
-                <div class="step-description">
-                    The authenticated Riot account is identified.
-                </div>
-
-            </div>
-
-
-            <div class="step">
-
-                <div class="number">
-                    4
-                </div>
-
-                <div class="step-title">
-                    Rank
-                </div>
-
-                <div class="step-description">
-                    VALORANT competitive rank is retrieved.
-                </div>
-
-            </div>
-
-
-            <div class="step">
-
-                <div class="number">
-                    5
-                </div>
-
-                <div class="step-title">
-                    Discord
-                </div>
-
-                <div class="step-description">
-                    Verified rank can be associated with a Discord role.
-                </div>
-
-            </div>
-
-
-        </div>
-
-    </div>
-
-
-    <!-- =====================================================
-         DEMO RESULT
-         ===================================================== -->
-
-    <div class="card">
-
-        <h2>
-            Verification Result
-        </h2>
-
-        <div class="verification">
-
-            <div class="verification-title">
-                Riot Account
-            </div>
-
-            <span class="status">
-                DEMO ACCOUNT
-            </span>
-
-            <div class="rank">
-                Gold 2
-            </div>
-
-            <p class="small">
-                Example verification result for the prototype.
-            </p>
-
-        </div>
-
-
-        <div class="demo">
-
-            <strong>
-                Prototype Notice
-            </strong>
+            <h2>티어 인증</h2>
 
             <p>
-                This page currently uses demonstration data.
-                Live Riot Account authentication and player
-                data will only be enabled after the NOVA
-                application receives the required Riot
-                production approval and RSO access.
+                플레이어의 VALORANT 경쟁전 정보를 확인하여
+                Discord 서버에서 본인의 티어를 인증할 수 있도록
+                지원하는 기능을 제공합니다.
             </p>
-
         </div>
 
-    </div>
 
+        <div class="card">
+            <div class="icon">🎮</div>
 
-    <!-- =====================================================
-         RSO EXPLANATION
-         ===================================================== -->
+            <h2>VALORANT 연동</h2>
 
-    <div class="card">
-
-        <h2>
-            Riot Account Privacy & Opt-in
-        </h2>
-
-        <p>
-            NOVA will require users to explicitly opt in
-            to Riot Account data sharing through Riot Sign On.
-        </p>
-
-        <p>
-            NOVA will not ask users for their Riot Account
-            password. Authentication will be handled through
-            Riot's official authentication flow.
-        </p>
-
-        <p>
-            Users who do not authorize account linking will
-            not have their Riot player information displayed
-            through this verification system.
-        </p>
-
-    </div>
-
-
-    <!-- =====================================================
-         PRIVACY
-         ===================================================== -->
-
-    <div class="card">
-
-        <h2>
-            Data Usage
-        </h2>
-
-        <p>
-            The purpose of the verification system is to
-            confirm a member's VALORANT competitive rank
-            for use within the NOVA community.
-        </p>
-
-        <p>
-            The system is not intended to provide gameplay
-            advantages, scouting functionality, or an
-            alternative ranking system.
-        </p>
-
-        <p>
-            NOVA does not calculate MMR or ELO and does not
-            attempt to replace VALORANT's official ranking
-            system.
-        </p>
-
-    </div>
-
-
-    <!-- =====================================================
-         FOOTER
-         ===================================================== -->
-
-    <div class="footer">
-
-        <div>
-            NOVA is an independent community project.
+            <p>
+                Riot Games에서 제공하는 공식 API를 활용하여
+                플레이어의 게임 정보를 조회하는 것을 목표로 합니다.
+            </p>
         </div>
 
-        <div>
-            This project is not endorsed by or affiliated
-            with Riot Games.
+
+        <div class="card">
+            <div class="icon">💬</div>
+
+            <h2>Discord 커뮤니티</h2>
+
+            <p>
+                NOVA Discord 서버와 연동하여
+                커뮤니티 구성원이 보다 편리하게
+                게임 정보를 확인할 수 있도록 지원합니다.
+            </p>
         </div>
 
-        <div class="links">
-
-            <a href="/privacy">
-                Privacy
-            </a>
-
-            <a href="/terms">
-                Terms
-            </a>
-
-            <a href="/about">
-                About NOVA
-            </a>
-
-        </div>
-
-    </div>
-
-</div>
-
-</body>
-</html>
-"""
+    </section>
 
 
-# =========================================================
-# 인증 페이지
-# =========================================================
+    <section class="notice">
 
-VERIFY_HTML = """
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-
-<meta charset="UTF-8">
-
-<meta name="viewport"
-      content="width=device-width, initial-scale=1.0">
-
-<title>NOVA | Verify Rank</title>
-
-<style>
-
-body {
-    margin: 0;
-    min-height: 100vh;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    background: #0b0d12;
-
-    color: white;
-
-    font-family:
-        Arial,
-        Helvetica,
-        sans-serif;
-}
-
-.box {
-    width: 90%;
-    max-width: 600px;
-
-    padding: 40px;
-
-    border-radius: 20px;
-
-    background: #12161f;
-
-    border: 1px solid
-        rgba(255,255,255,0.08);
-
-    text-align: center;
-}
-
-h1 {
-    margin-top: 0;
-}
-
-p {
-    color: #aeb6c4;
-    line-height: 1.7;
-}
-
-.demo-button {
-    display: inline-block;
-
-    margin-top: 20px;
-
-    padding: 14px 22px;
-
-    border-radius: 10px;
-
-    background: white;
-    color: #111;
-
-    font-weight: bold;
-}
-
-.notice {
-    margin-top: 25px;
-
-    padding: 18px;
-
-    border-radius: 12px;
-
-    background:
-        rgba(255,204,102,0.06);
-
-    border:
-        1px solid
-        rgba(255,204,102,0.18);
-
-    text-align: left;
-}
-
-.notice strong {
-    color: #ffcc66;
-}
-
-a {
-    color: #cbd1dc;
-    text-decoration: none;
-}
-
-</style>
-
-</head>
-
-
-<body>
-
-<div class="box">
-
-    <h1>
-        Connect Riot Account
-    </h1>
-
-    <p>
-        To verify your VALORANT rank, NOVA will
-        use Riot Sign On (RSO) to allow you to
-        securely authorize access to your Riot
-        Account information.
-    </p>
-
-
-    <div class="notice">
-
-        <strong>
-            Prototype Mode
-        </strong>
+        <h2>서비스 안내</h2>
 
         <p>
-            RSO access is not enabled in this prototype.
-            The button below represents the planned
-            Riot Sign On step for the final application.
+            본 웹사이트는 NOVA Discord 커뮤니티에서 사용할
+            VALORANT 티어 인증 기능을 검증하기 위한
+            프로토타입입니다.
+            <br><br>
+
+            실제 서비스에서는 Riot Games의 공식 개발자 정책과
+            VALORANT API 이용 정책을 준수하며,
+            필요한 API 권한이 승인된 경우에만 관련 기능을
+            제공할 예정입니다.
         </p>
 
-    </div>
+    </section>
 
 
-    <div class="demo-button">
-        Continue with Riot Sign On
-    </div>
-
-
-    <p style="margin-top:30px;">
-
-        <a href="/">
-            ← Back to NOVA
-        </a>
-
-    </p>
+    <footer>
+        NOVA VALORANT COMMUNITY · Riot Games API 활용 프로토타입
+    </footer>
 
 </div>
 
 </body>
-
 </html>
 """
 
 
 # =========================================================
-# Privacy Policy
-# =========================================================
-
-PRIVACY_HTML = """
-<!DOCTYPE html>
-
-<html lang="en">
-
-<head>
-
-<meta charset="UTF-8">
-
-<meta name="viewport"
-      content="width=device-width, initial-scale=1.0">
-
-<title>NOVA | Privacy</title>
-
-<style>
-
-body {
-    background: #0b0d12;
-    color: white;
-
-    font-family:
-        Arial,
-        Helvetica,
-        sans-serif;
-
-    margin: 0;
-}
-
-.container {
-    max-width: 850px;
-
-    margin: auto;
-
-    padding: 50px 20px;
-}
-
-.card {
-    background: #12161f;
-
-    border-radius: 18px;
-
-    padding: 35px;
-}
-
-p {
-    color: #adb5c3;
-
-    line-height: 1.8;
-}
-
-a {
-    color: white;
-}
-
-</style>
-
-</head>
-
-
-<body>
-
-<div class="container">
-
-<div class="card">
-
-<h1>
-NOVA Privacy Policy
-</h1>
-
-<p>
-NOVA is a community project for VALORANT players.
-</p>
-
-<p>
-The planned rank verification system will use Riot
-Sign On (RSO) so that users can explicitly authorize
-Riot Account data sharing.
-</p>
-
-<p>
-NOVA will only use authorized information for the
-purpose of verifying a member's VALORANT competitive
-rank within the NOVA community.
-</p>
-
-<p>
-NOVA will not request or store Riot Account passwords.
-</p>
-
-<p>
-Users may choose not to link their Riot Account.
-</p>
-
-<p>
-This prototype does not currently perform live Riot
-Account authentication.
-</p>
-
-<p>
-<a href="/">
-← Back to NOVA
-</a>
-</p>
-
-</div>
-
-</div>
-
-</body>
-
-</html>
-"""
-
-
-# =========================================================
-# Terms
-# =========================================================
-
-TERMS_HTML = """
-<!DOCTYPE html>
-
-<html lang="en">
-
-<head>
-
-<meta charset="UTF-8">
-
-<meta name="viewport"
-      content="width=device-width, initial-scale=1.0">
-
-<title>NOVA | Terms</title>
-
-<style>
-
-body {
-    background: #0b0d12;
-    color: white;
-
-    font-family:
-        Arial,
-        Helvetica,
-        sans-serif;
-
-    margin: 0;
-}
-
-.container {
-    max-width: 850px;
-
-    margin: auto;
-
-    padding: 50px 20px;
-}
-
-.card {
-    background: #12161f;
-
-    border-radius: 18px;
-
-    padding: 35px;
-}
-
-p {
-    color: #adb5c3;
-
-    line-height: 1.8;
-}
-
-a {
-    color: white;
-}
-
-</style>
-
-</head>
-
-
-<body>
-
-<div class="container">
-
-<div class="card">
-
-<h1>
-NOVA Terms
-</h1>
-
-<p>
-NOVA is an independent community project and is not
-endorsed by Riot Games.
-</p>
-
-<p>
-The planned verification service is intended only
-to help members verify their VALORANT competitive
-rank within the NOVA community.
-</p>
-
-<p>
-NOVA does not provide gameplay advantages,
-scouting tools, MMR calculations, or ELO calculations.
-</p>
-
-<p>
-The current website is a prototype and does not
-perform live Riot Account authentication.
-</p>
-
-<p>
-<a href="/">
-← Back to NOVA
-</a>
-</p>
-
-</div>
-
-</div>
-
-</body>
-
-</html>
-"""
-
-
-# =========================================================
-# About
-# =========================================================
-
-ABOUT_HTML = """
-<!DOCTYPE html>
-
-<html lang="en">
-
-<head>
-
-<meta charset="UTF-8">
-
-<meta name="viewport"
-      content="width=device-width, initial-scale=1.0">
-
-<title>NOVA | About</title>
-
-<style>
-
-body {
-    background: #0b0d12;
-    color: white;
-
-    font-family:
-        Arial,
-        Helvetica,
-        sans-serif;
-
-    margin: 0;
-}
-
-.container {
-    max-width: 850px;
-
-    margin: auto;
-
-    padding: 50px 20px;
-}
-
-.card {
-    background: #12161f;
-
-    border-radius: 18px;
-
-    padding: 35px;
-}
-
-p {
-    color: #adb5c3;
-
-    line-height: 1.8;
-}
-
-a {
-    color: white;
-}
-
-</style>
-
-</head>
-
-
-<body>
-
-<div class="container">
-
-<div class="card">
-
-<h1>
-About NOVA
-</h1>
-
-<p>
-NOVA is a VALORANT-focused Discord community.
-</p>
-
-<p>
-The project aims to provide community tools that
-help members connect with other players and maintain
-a trustworthy environment.
-</p>
-
-<p>
-One planned feature is Riot Account-based VALORANT
-rank verification using Riot's official authentication
-and API systems.
-</p>
-
-<p>
-This website is currently a prototype demonstrating
-the planned user experience.
-</p>
-
-<p>
-<a href="/">
-← Back to NOVA
-</a>
-</p>
-
-</div>
-
-</div>
-
-</body>
-
-</html>
-"""
-
-
-# =========================================================
-# Flask Routes
+# Flask
 # =========================================================
 
 @app.route("/")
@@ -1165,38 +322,30 @@ def home():
     return render_template_string(HTML)
 
 
-@app.route("/verify")
-def verify():
-    return render_template_string(VERIFY_HTML)
+# =========================================================
+# Discord Bot
+# =========================================================
+
+intents = discord.Intents.default()
+intents.message_content = True
+
+bot = commands.Bot(
+    command_prefix="!",
+    intents=intents
+)
 
 
-@app.route("/privacy")
-def privacy():
-    return render_template_string(PRIVACY_HTML)
-
-
-@app.route("/terms")
-def terms():
-    return render_template_string(TERMS_HTML)
-
-
-@app.route("/about")
-def about():
-    return render_template_string(ABOUT_HTML)
+@bot.event
+async def on_ready():
+    print(f"NOVA Bot 로그인 완료: {bot.user}")
 
 
 # =========================================================
-# Flask 실행
+# Flask 서버 실행
 # =========================================================
 
 def run_web():
-
-    port = int(
-        os.environ.get(
-            "PORT",
-            10000
-        )
-    )
+    port = int(os.environ.get("PORT", 10000))
 
     app.run(
         host="0.0.0.0",
@@ -1205,149 +354,22 @@ def run_web():
 
 
 # =========================================================
-# Discord Bot 설정
-# =========================================================
-
-intents = discord.Intents.default()
-
-intents.message_content = True
-
-
-bot = commands.Bot(
-    command_prefix="!",
-    intents=intents
-)
-
-
-# =========================================================
-# Discord Bot 준비 완료
-# =========================================================
-
-@bot.event
-async def on_ready():
-
-    print(
-        "=========================================="
-    )
-
-    print(
-        "✅ NOVA 봇 온라인!"
-    )
-
-    print(
-        f"🤖 봇 이름 : {bot.user}"
-    )
-
-    print(
-        f"🆔 봇 ID   : {bot.user.id}"
-    )
-
-    print(
-        f"🏠 서버 수 : {len(bot.guilds)}"
-    )
-
-    print(
-        "=========================================="
-    )
-
-
-    await bot.change_presence(
-
-        status=discord.Status.online,
-
-        activity=discord.Game(
-            name="NOVA | Valorant"
-        )
-
-    )
-
-
-# =========================================================
-# Ping 명령어
-# =========================================================
-
-@bot.command()
-async def ping(ctx):
-
-    latency = round(
-        bot.latency * 1000
-    )
-
-    await ctx.send(
-        f"🏓 Pong! `{latency}ms`"
-    )
-
-
-# =========================================================
-# NOVA 인증 안내 명령어
-# =========================================================
-
-@bot.command()
-async def tier(ctx):
-
-    await ctx.send(
-        "🏆 **NOVA VALORANT 티어 인증**\n\n"
-        "현재 Riot API 심사용 프로토타입이 준비되어 있습니다.\n"
-        "웹사이트에서 인증 흐름을 확인할 수 있습니다.\n\n"
-        "🌐 https://nova-fo0d.onrender.com/verify"
-    )
-
-
-# =========================================================
-# Discord Bot 실행
-# =========================================================
-
-def run_bot():
-
-    token = os.environ.get(
-        "DISCORD_TOKEN"
-    )
-
-
-    if not token:
-
-        print(
-            "❌ DISCORD_TOKEN을 찾을 수 없습니다!"
-        )
-
-        return
-
-
-    print(
-        "🔄 Discord 봇 연결을 시작합니다..."
-    )
-
-
-    try:
-
-        bot.run(
-            token
-        )
-
-    except Exception as e:
-
-        print(
-            f"❌ 봇 실행 중 오류 발생: {e}"
-        )
-
-
-# =========================================================
 # 프로그램 시작
 # =========================================================
 
 if __name__ == "__main__":
 
-
     web_thread = threading.Thread(
-
         target=run_web,
-
         daemon=True
-
     )
-
 
     web_thread.start()
 
+    token = os.environ.get("DISCORD_TOKEN")
 
-    run_bot()
+    if not token:
+        print("DISCORD_TOKEN 환경변수가 없습니다.")
+    else:
+        bot.run(token)
+```
