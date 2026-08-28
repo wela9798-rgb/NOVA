@@ -5,20 +5,12 @@ from discord.ext import commands
 
 # =========================================================
 # NOVA DISCORD BOT
-# VALORANT TIER VERIFICATION PROTOTYPE
-# =========================================================
-
-
-# =========================================================
-# 환경변수
 # =========================================================
 
 TOKEN = os.getenv("DISCORD_TOKEN")
 
-# NOVA Discord 서버 ID
 GUILD_ID = 1541335745753653248
 
-# NOVA 사이트
 WEBSITE_URL = "https://nova-fo0d.onrender.com"
 
 
@@ -28,22 +20,21 @@ WEBSITE_URL = "https://nova-fo0d.onrender.com"
 
 if not TOKEN:
     raise RuntimeError(
-        "DISCORD_TOKEN 환경변수가 설정되어 있지 않습니다."
+        "DISCORD_TOKEN 환경변수가 설정되지 않았습니다."
     )
 
 
 # =========================================================
-# Discord Intents
+# INTENTS
 # =========================================================
 
 intents = discord.Intents.default()
-
 intents.guilds = True
 intents.members = True
 
 
 # =========================================================
-# Bot
+# BOT
 # =========================================================
 
 bot = commands.Bot(
@@ -53,19 +44,8 @@ bot = commands.Bot(
 
 
 # =========================================================
-# VALORANT 티어 이름
+# VALORANT 티어
 # =========================================================
-#
-# 역할 이름 전체를 적지 않습니다.
-#
-# 예:
-# 아이언 ๑꒱
-# 브론즈 ๑꒱
-# 골드 ๑꒱
-#
-# 처럼 꾸며져 있어도 핵심 단어만 있으면
-# 자동으로 해당 역할을 찾습니다.
-#
 
 TIER_KEYWORDS = [
     "아이언",
@@ -79,10 +59,6 @@ TIER_KEYWORDS = [
     "레디언트"
 ]
 
-
-# =========================================================
-# 티어별 이모지
-# =========================================================
 
 TIER_EMOJIS = {
     "아이언": "⚙️",
@@ -101,41 +77,34 @@ TIER_EMOJIS = {
 # 역할 찾기
 # =========================================================
 
-def find_tier_role(
-    guild: discord.Guild,
-    tier_keyword: str
-):
+def find_tier_role(guild, tier_name):
 
     for role in guild.roles:
 
-        if tier_keyword in role.name:
-
+        if tier_name in role.name:
             return role
 
     return None
 
 
 # =========================================================
-# 기존 티어 역할 찾기
+# 사용자가 가진 기존 티어 역할 찾기
 # =========================================================
 
-def find_user_tier_roles(
-    member: discord.Member
-):
+def find_old_tier_roles(member):
 
-    found_roles = []
+    old_roles = []
 
     for role in member.roles:
 
-        for keyword in TIER_KEYWORDS:
+        for tier_name in TIER_KEYWORDS:
 
-            if keyword in role.name:
+            if tier_name in role.name:
 
-                found_roles.append(role)
-
+                old_roles.append(role)
                 break
 
-    return found_roles
+    return old_roles
 
 
 # =========================================================
@@ -153,24 +122,21 @@ class TierSelect(discord.ui.Select):
             options.append(
                 discord.SelectOption(
                     label=tier,
-                    description=f"{tier} 역할을 테스트합니다.",
+                    description=f"{tier} 역할을 지급합니다.",
                     emoji=TIER_EMOJIS[tier],
                     value=tier
                 )
             )
 
         super().__init__(
-            placeholder="인증할 티어를 선택하세요.",
+            placeholder="티어를 선택하세요.",
             min_values=1,
             max_values=1,
             options=options
         )
 
 
-    async def callback(
-        self,
-        interaction: discord.Interaction
-    ):
+    async def callback(self, interaction):
 
         selected_tier = self.values[0]
 
@@ -186,9 +152,9 @@ class TierSelect(discord.ui.Select):
             return
 
 
-        # -------------------------------------------------
+        # =================================================
         # 선택한 티어 역할 찾기
-        # -------------------------------------------------
+        # =================================================
 
         selected_role = find_tier_role(
             guild,
@@ -201,7 +167,7 @@ class TierSelect(discord.ui.Select):
             await interaction.response.send_message(
                 (
                     f"❌ `{selected_tier}` 역할을 찾을 수 없습니다.\n\n"
-                    f"서버 역할 이름에 `{selected_tier}`가 "
+                    f"서버 역할에 `{selected_tier}`가 "
                     f"포함되어 있는지 확인해주세요."
                 ),
                 ephemeral=True
@@ -210,9 +176,9 @@ class TierSelect(discord.ui.Select):
             return
 
 
-        # -------------------------------------------------
-        # 봇 정보
-        # -------------------------------------------------
+        # =================================================
+        # 봇 역할 확인
+        # =================================================
 
         bot_member = guild.me
 
@@ -226,16 +192,16 @@ class TierSelect(discord.ui.Select):
             return
 
 
-        # -------------------------------------------------
-        # 역할 위치 확인
-        # -------------------------------------------------
+        # =================================================
+        # 봇보다 역할이 높은지 확인
+        # =================================================
 
         if selected_role >= bot_member.top_role:
 
             await interaction.response.send_message(
                 (
-                    "❌ 이 역할을 지급할 수 없습니다.\n\n"
-                    "Discord 서버 설정 → 역할에서\n"
+                    "❌ 역할을 지급할 수 없습니다.\n\n"
+                    "서버 설정 → 역할에서\n"
                     "**NOVA 봇 역할을 티어 역할보다 위로** "
                     "올려주세요."
                 ),
@@ -245,20 +211,18 @@ class TierSelect(discord.ui.Select):
             return
 
 
-        # -------------------------------------------------
-        # 기존 티어 역할 확인
-        # -------------------------------------------------
+        # =================================================
+        # 기존 티어 역할 찾기
+        # =================================================
 
-        old_roles = find_user_tier_roles(
+        old_roles = find_old_tier_roles(
             interaction.user
         )
 
 
         try:
 
-            # -------------------------------------------------
             # 기존 티어 역할 제거
-            # -------------------------------------------------
 
             if old_roles:
 
@@ -268,9 +232,7 @@ class TierSelect(discord.ui.Select):
                 )
 
 
-            # -------------------------------------------------
             # 새로운 티어 역할 지급
-            # -------------------------------------------------
 
             await interaction.user.add_roles(
                 selected_role,
@@ -282,9 +244,8 @@ class TierSelect(discord.ui.Select):
 
             await interaction.response.send_message(
                 (
-                    "❌ 역할을 지급할 권한이 없습니다.\n\n"
-                    "NOVA 봇의 역할을 티어 역할보다 "
-                    "위로 올려주세요."
+                    "❌ 봇에게 역할 관리 권한이 없습니다.\n\n"
+                    "NOVA 봇 역할을 티어 역할보다 위로 올려주세요."
                 ),
                 ephemeral=True
             )
@@ -294,7 +255,7 @@ class TierSelect(discord.ui.Select):
 
         except Exception as e:
 
-            print("Role Assignment Error:")
+            print("역할 지급 오류:")
             print(e)
 
             await interaction.response.send_message(
@@ -305,15 +266,11 @@ class TierSelect(discord.ui.Select):
             return
 
 
-        # -------------------------------------------------
+        # =================================================
         # 성공 메시지
-        # -------------------------------------------------
+        # =================================================
 
-        emoji = TIER_EMOJIS.get(
-            selected_tier,
-            "🎮"
-        )
-
+        emoji = TIER_EMOJIS[selected_tier]
 
         embed = discord.Embed(
             title="✅ NOVA 티어 역할 지급 완료",
@@ -324,21 +281,18 @@ class TierSelect(discord.ui.Select):
             color=discord.Color.blurple()
         )
 
-
         embed.add_field(
             name="⚠️ 테스트 기능",
             value=(
-                "현재는 Riot Production API 승인 전이므로\n"
-                "실제 VALORANT 티어를 조회한 결과가 아닙니다."
+                "현재 Riot Production API 승인 전이므로\n"
+                "실제 Riot 계정의 티어가 아닙니다."
             ),
             inline=False
         )
 
-
         embed.set_footer(
-            text="NOVA Tier Verification Prototype"
+            text="NOVA Tier Verification"
         )
-
 
         await interaction.response.edit_message(
             embed=embed,
@@ -347,16 +301,14 @@ class TierSelect(discord.ui.Select):
 
 
 # =========================================================
-# 티어 선택 View
+# 티어 View
 # =========================================================
 
 class TierView(discord.ui.View):
 
     def __init__(self):
 
-        super().__init__(
-            timeout=120
-        )
+        super().__init__(timeout=120)
 
         self.add_item(
             TierSelect()
@@ -364,7 +316,7 @@ class TierView(discord.ui.View):
 
 
 # =========================================================
-# Bot 시작
+# BOT READY
 # =========================================================
 
 @bot.event
@@ -383,20 +335,14 @@ async def on_ready():
             id=GUILD_ID
         )
 
-
-        # -------------------------------------------------
-        # Slash Command 동기화
-        # -------------------------------------------------
-
         synced = await bot.tree.sync(
             guild=guild
         )
 
-
         print(
-            f"Slash Commands Synced : {len(synced)}"
+            f"서버 전용 명령어 동기화 완료! "
+            f"({len(synced)}개)"
         )
-
 
         for command in synced:
 
@@ -407,10 +353,7 @@ async def on_ready():
 
     except Exception as e:
 
-        print(
-            "Slash Command Sync Error:"
-        )
-
+        print("Slash Command Sync Error:")
         print(e)
 
 
@@ -423,19 +366,16 @@ async def on_ready():
     description="NOVA에서 VALORANT 티어 인증을 진행합니다.",
     guild=discord.Object(id=GUILD_ID)
 )
-async def tier_verify(
-    interaction: discord.Interaction
-):
+async def tier_verify(interaction):
 
     embed = discord.Embed(
-        title="NOVA  |  VALORANT 티어 인증",
+        title="NOVA | VALORANT 티어 인증",
         description=(
             "NOVA 서버에서 VALORANT 티어를 인증하려면\n"
-            "아래 **Riot 계정 인증하기** 버튼을 눌러주세요."
+            "아래 버튼을 눌러주세요."
         ),
         color=discord.Color.blurple()
     )
-
 
     embed.add_field(
         name="🔐 인증 방식",
@@ -443,34 +383,24 @@ async def tier_verify(
         inline=False
     )
 
-
     embed.add_field(
         name="🎮 게임",
         value="VALORANT",
         inline=True
     )
 
-
     embed.add_field(
         name="🛡️ 개인정보",
-        value=(
-            "Riot 계정 인증 과정에서 사용자의 동의가 필요합니다."
-        ),
+        value="사용자의 동의 후 Riot 계정 정보를 사용합니다.",
         inline=True
     )
-
 
     embed.set_footer(
         text="NOVA Tier Verification"
     )
 
 
-    # -----------------------------------------------------
-    # Riot 인증 버튼
-    # -----------------------------------------------------
-
     view = discord.ui.View()
-
 
     button = discord.ui.Button(
         label="Riot 계정 인증하기",
@@ -478,10 +408,7 @@ async def tier_verify(
         url=f"{WEBSITE_URL}/riot-login"
     )
 
-
-    view.add_item(
-        button
-    )
+    view.add_item(button)
 
 
     await interaction.response.send_message(
@@ -497,12 +424,10 @@ async def tier_verify(
 
 @bot.tree.command(
     name="티어테스트",
-    description="티어 역할 자동 지급을 테스트합니다.",
+    description="NOVA 티어 역할 자동 지급을 테스트합니다.",
     guild=discord.Object(id=GUILD_ID)
 )
-async def tier_test(
-    interaction: discord.Interaction
-):
+async def tier_test(interaction):
 
     embed = discord.Embed(
         title="🎮 NOVA | 티어 역할 테스트",
@@ -513,19 +438,17 @@ async def tier_test(
         color=discord.Color.blurple()
     )
 
-
     embed.add_field(
-        name="⚠️ 테스트 기능",
+        name="⚠️ 테스트",
         value=(
-            "현재는 Riot API 승인 전입니다.\n"
-            "선택한 티어는 실제 Riot 계정 정보가 아닙니다."
+            "현재는 테스트 기능입니다.\n"
+            "실제 Riot 계정의 티어를 조회하지 않습니다."
         ),
         inline=False
     )
 
-
     embed.set_footer(
-        text="NOVA Tier Verification Prototype"
+        text="NOVA Tier Verification"
     )
 
 
@@ -545,9 +468,7 @@ async def tier_test(
     description="NOVA 봇 정보를 확인합니다.",
     guild=discord.Object(id=GUILD_ID)
 )
-async def nova_info(
-    interaction: discord.Interaction
-):
+async def nova_info(interaction):
 
     embed = discord.Embed(
         title="🌌 NOVA",
@@ -558,13 +479,11 @@ async def nova_info(
         color=discord.Color.blurple()
     )
 
-
     embed.add_field(
         name="🎮 게임",
         value="VALORANT",
         inline=True
     )
-
 
     embed.add_field(
         name="🔐 티어 인증",
@@ -572,13 +491,11 @@ async def nova_info(
         inline=True
     )
 
-
     embed.add_field(
-        name="🧪 역할 테스트",
+        name="🧪 티어 테스트",
         value="/티어테스트",
         inline=True
     )
-
 
     embed.add_field(
         name="🌐 Website",
@@ -586,11 +503,9 @@ async def nova_info(
         inline=False
     )
 
-
     embed.set_footer(
         text="NOVA Community"
     )
-
 
     await interaction.response.send_message(
         embed=embed
@@ -606,12 +521,9 @@ async def nova_info(
     description="NOVA 인증 사이트 링크를 표시합니다.",
     guild=discord.Object(id=GUILD_ID)
 )
-async def website(
-    interaction: discord.Interaction
-):
+async def website(interaction):
 
     view = discord.ui.View()
-
 
     button = discord.ui.Button(
         label="NOVA 인증 사이트",
@@ -619,11 +531,7 @@ async def website(
         url=WEBSITE_URL
     )
 
-
-    view.add_item(
-        button
-    )
-
+    view.add_item(button)
 
     await interaction.response.send_message(
         "🌐 **NOVA 인증 사이트**",
@@ -641,9 +549,7 @@ async def website(
     description="NOVA 봇의 명령어를 확인합니다.",
     guild=discord.Object(id=GUILD_ID)
 )
-async def help_command(
-    interaction: discord.Interaction
-):
+async def help_command(interaction):
 
     embed = discord.Embed(
         title="🌌 NOVA Bot",
@@ -651,13 +557,11 @@ async def help_command(
         color=discord.Color.blurple()
     )
 
-
     embed.add_field(
         name="🎮 /티어인증",
         value="VALORANT 티어 인증을 시작합니다.",
         inline=False
     )
-
 
     embed.add_field(
         name="🧪 /티어테스트",
@@ -665,13 +569,11 @@ async def help_command(
         inline=False
     )
 
-
     embed.add_field(
         name="🌐 /사이트",
         value="NOVA 인증 사이트를 확인합니다.",
         inline=False
     )
-
 
     embed.add_field(
         name="ℹ️ /노바",
@@ -679,18 +581,15 @@ async def help_command(
         inline=False
     )
 
-
     embed.add_field(
         name="❓ /도움말",
         value="명령어 목록을 확인합니다.",
         inline=False
     )
 
-
     embed.set_footer(
         text="NOVA Community"
     )
-
 
     await interaction.response.send_message(
         embed=embed,
@@ -699,7 +598,7 @@ async def help_command(
 
 
 # =========================================================
-# 봇 실행
+# BOT 실행
 # =========================================================
 
 bot.run(TOKEN)
