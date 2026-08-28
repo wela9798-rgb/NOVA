@@ -1,10 +1,9 @@
 import os
+from flask import Flask, request, render_template_string
 
-from flask import Flask, render_template_string
+app = Flask(__name__)
 
-
-app = Flask("nova")
-
+RIOT_API_KEY = os.getenv("RIOT_API_KEY", "")
 
 HTML = """
 <!DOCTYPE html>
@@ -13,184 +12,195 @@ HTML = """
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>NOVA - VALORANT 티어 인증</title>
+    <title>NOVA 티어 인증</title>
 
     <style>
-
         * {
             box-sizing: border-box;
-            margin: 0;
-            padding: 0;
         }
 
         body {
-            font-family: Arial, "Noto Sans KR", sans-serif;
-            background: #0b0b12;
-            color: white;
+            margin: 0;
             min-height: 100vh;
+            font-family: Arial, "Noto Sans KR", sans-serif;
+            background:
+                radial-gradient(circle at top left, #1e293b 0%, transparent 35%),
+                radial-gradient(circle at bottom right, #312e81 0%, transparent 35%),
+                #080b12;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 30px 15px;
         }
 
         .container {
-            width: 90%;
-            max-width: 1100px;
-            margin: auto;
-        }
-
-        header {
-            height: 80px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+            width: 100%;
+            max-width: 650px;
         }
 
         .logo {
-            font-size: 28px;
-            font-weight: 900;
-            letter-spacing: 5px;
-        }
-
-        .status {
-            color: #aaaabb;
-            font-size: 13px;
-        }
-
-        .hero {
             text-align: center;
-            padding: 110px 20px 90px;
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 8px 16px;
-            border: 1px solid #30303d;
-            border-radius: 30px;
-            color: #aaaabb;
-            font-size: 12px;
             margin-bottom: 25px;
         }
 
-        h1 {
-            font-size: clamp(42px, 7vw, 78px);
-            line-height: 1.1;
-            margin-bottom: 30px;
+        .logo h1 {
+            margin: 0;
+            font-size: 48px;
+            letter-spacing: 8px;
+            font-weight: 900;
         }
 
-        .red {
-            color: #ff4655;
-        }
-
-        .hero-text {
-            max-width: 720px;
-            margin: auto;
-            color: #a5a5b5;
-            line-height: 1.9;
-            font-size: 17px;
-        }
-
-        .cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 60px;
+        .logo p {
+            margin-top: 10px;
+            color: #9ca3af;
+            font-size: 15px;
         }
 
         .card {
-            padding: 30px;
-            background: #12121b;
-            border: 1px solid #292936;
-            border-radius: 18px;
-        }
-
-        .icon {
-            font-size: 30px;
-            margin-bottom: 18px;
-        }
-
-        .card h2 {
-            margin-bottom: 12px;
-            font-size: 20px;
-        }
-
-        .card p {
-            color: #9696a7;
-            line-height: 1.8;
-            font-size: 14px;
-        }
-
-        .verification {
-            padding: 35px;
-            margin-bottom: 30px;
-            background: #12121b;
-            border: 1px solid #3d2025;
+            background: rgba(17, 24, 39, 0.92);
+            border: 1px solid rgba(255,255,255,0.08);
             border-radius: 20px;
+            padding: 35px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.45);
+            backdrop-filter: blur(10px);
         }
 
-        .verification h2 {
-            margin-bottom: 15px;
+        .title {
+            font-size: 25px;
+            font-weight: 800;
+            margin-bottom: 8px;
         }
 
-        .verification p {
-            color: #a6a6b5;
-            line-height: 1.8;
+        .description {
+            color: #9ca3af;
+            line-height: 1.6;
+            margin-bottom: 28px;
+        }
+
+        label {
+            display: block;
             font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #d1d5db;
         }
 
-        .steps {
-            margin-top: 25px;
+        input, select {
+            width: 100%;
+            padding: 14px 15px;
+            margin-bottom: 18px;
+            border: 1px solid #374151;
+            border-radius: 10px;
+            background: #111827;
+            color: white;
+            font-size: 15px;
+            outline: none;
+        }
+
+        input:focus, select:focus {
+            border-color: #6366f1;
+        }
+
+        .riot-id {
             display: grid;
-            gap: 12px;
+            grid-template-columns: 1fr 120px;
+            gap: 10px;
         }
 
-        .step {
-            display: flex;
-            align-items: center;
-            gap: 14px;
+        button {
+            width: 100%;
             padding: 15px;
-            background: #0d0d14;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            font-size: 16px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-1px);
+            opacity: 0.95;
+        }
+
+        .result {
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 14px;
+            background: #0f172a;
+            border: 1px solid #334155;
+        }
+
+        .result.success {
+            border-color: #22c55e;
+        }
+
+        .result.warning {
+            border-color: #f59e0b;
+        }
+
+        .result.error {
+            border-color: #ef4444;
+        }
+
+        .rank {
+            font-size: 30px;
+            font-weight: 900;
+            margin: 10px 0;
+        }
+
+        .small {
+            color: #94a3b8;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 25px;
+        }
+
+        .feature {
+            padding: 15px 10px;
+            text-align: center;
+            background: #111827;
             border-radius: 12px;
-            color: #c0c0cc;
-            font-size: 14px;
-        }
-
-        .number {
-            width: 28px;
-            height: 28px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            background: #ff4655;
-            font-size: 12px;
-            font-weight: bold;
-        }
-
-        .notice {
-            padding: 30px;
-            margin-bottom: 70px;
-            background: #12121b;
-            border: 1px solid #292936;
-            border-radius: 18px;
-        }
-
-        .notice h2 {
-            margin-bottom: 15px;
-        }
-
-        .notice p {
-            color: #9696a7;
-            line-height: 1.9;
+            color: #cbd5e1;
             font-size: 13px;
         }
 
-        footer {
-            padding: 30px 0;
-            border-top: 1px solid #242430;
-            text-align: center;
-            color: #666676;
-            font-size: 12px;
-            line-height: 1.8;
+        .feature strong {
+            display: block;
+            color: white;
+            margin-bottom: 5px;
         }
 
+        .footer {
+            text-align: center;
+            color: #64748b;
+            font-size: 12px;
+            margin-top: 20px;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 550px) {
+            .card {
+                padding: 25px 20px;
+            }
+
+            .logo h1 {
+                font-size: 38px;
+            }
+
+            .features {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 
@@ -198,227 +208,98 @@ HTML = """
 
 <div class="container">
 
-    <header>
+    <div class="logo">
+        <h1>NOVA</h1>
+        <p>VALORANT COMMUNITY</p>
+    </div>
 
-        <div class="logo">
-            NOVA
+    <div class="card">
+
+        <div class="title">발로란트 티어 인증</div>
+
+        <div class="description">
+            NOVA 서버에서 사용할 발로란트 티어 인증 페이지입니다.<br>
+            라이엇 게임 계정 정보를 이용하여 플레이어 정보를 확인합니다.
         </div>
 
-        <div class="status">
-            ● 서비스 정상 운영
-        </div>
+        <form method="POST">
 
-    </header>
+            <label>라이엇 ID</label>
 
+            <div class="riot-id">
+                <input
+                    type="text"
+                    name="game_name"
+                    placeholder="게임 이름"
+                    required
+                >
 
-    <section class="hero">
-
-        <div class="badge">
-            VALORANT COMMUNITY SERVICE
-        </div>
-
-        <h1>
-            NOVA와 함께하는<br>
-            <span class="red">VALORANT 티어 인증</span>
-        </h1>
-
-        <p class="hero-text">
-
-            NOVA는 VALORANT 플레이어가
-            자신의 게임 정보를 확인하고
-            Discord 커뮤니티에서 티어를
-            인증할 수 있도록 지원하기 위해
-            개발 중인 커뮤니티 서비스입니다.
-
-        </p>
-
-    </section>
-
-
-    <section class="cards">
-
-
-        <div class="card">
-
-            <div class="icon">
-                🏆
+                <input
+                    type="text"
+                    name="tag_line"
+                    placeholder="태그"
+                    required
+                >
             </div>
 
-            <h2>
-                티어 인증
-            </h2>
+            <label>지역</label>
 
-            <p>
+            <select name="region">
+                <option value="kr">대한민국</option>
+                <option value="na">북미</option>
+                <option value="eu">유럽</option>
+                <option value="ap">아시아 태평양</option>
+            </select>
 
-                플레이어의 VALORANT 경쟁전 정보를
-                확인하고 Discord 서버에서
-                현재 티어를 인증할 수 있도록
-                지원합니다.
+            <button type="submit">
+                티어 인증 시작
+            </button>
 
-            </p>
+        </form>
 
-        </div>
+        {% if result %}
 
+        <div class="result {{ result_type }}">
 
-        <div class="card">
+            <strong>{{ result_title }}</strong>
 
-            <div class="icon">
-                🎮
+            {% if rank %}
+                <div class="rank">{{ rank }}</div>
+            {% endif %}
+
+            <div class="small">
+                {{ result }}
             </div>
-
-            <h2>
-                VALORANT 연동
-            </h2>
-
-            <p>
-
-                Riot Games에서 제공하는
-                공식 API를 활용하여
-                플레이어의 게임 정보를
-                조회하는 기능을 구현합니다.
-
-            </p>
 
         </div>
 
+        {% endif %}
 
-        <div class="card">
+        <div class="features">
 
-            <div class="icon">
-                💬
+            <div class="feature">
+                <strong>Riot ID</strong>
+                계정 확인
             </div>
 
-            <h2>
-                Discord 연동
-            </h2>
+            <div class="feature">
+                <strong>VALORANT</strong>
+                플레이어 정보
+            </div>
 
-            <p>
-
-                NOVA Discord 커뮤니티와 연동하여
-                인증된 플레이어의 티어 정보를
-                편리하게 확인할 수 있도록 합니다.
-
-            </p>
+            <div class="feature">
+                <strong>NOVA</strong>
+                서버 인증
+            </div>
 
         </div>
 
+    </div>
 
-    </section>
-
-
-    <section class="verification">
-
-        <h2>
-            티어 인증 절차
-        </h2>
-
-        <p>
-
-            실제 서비스에서는 Riot Games의
-            공식 인증 및 API 이용 절차를 기반으로
-            플레이어의 게임 정보를 확인할 예정입니다.
-
-        </p>
-
-
-        <div class="steps">
-
-
-            <div class="step">
-
-                <span class="number">
-                    1
-                </span>
-
-                Riot 계정 인증
-
-            </div>
-
-
-            <div class="step">
-
-                <span class="number">
-                    2
-                </span>
-
-                VALORANT 플레이어 정보 확인
-
-            </div>
-
-
-            <div class="step">
-
-                <span class="number">
-                    3
-                </span>
-
-                경쟁전 티어 정보 확인
-
-            </div>
-
-
-            <div class="step">
-
-                <span class="number">
-                    4
-                </span>
-
-                Discord 서버에서 티어 인증
-
-            </div>
-
-
-        </div>
-
-    </section>
-
-
-    <section class="notice">
-
-        <h2>
-            Riot Games API 이용 안내
-        </h2>
-
-        <p>
-
-            본 웹사이트는 NOVA Discord 커뮤니티에서
-            사용할 VALORANT 티어 인증 기능을
-            검증하기 위한 프로토타입입니다.
-
-            <br><br>
-
-            현재 단계에서는 Riot Games API의
-            Production 이용 승인을 전제로
-            기능을 설계하고 있습니다.
-
-            <br><br>
-
-            필요한 권한이 승인된 경우
-            Riot Games의 공식 API 정책과
-            개발자 약관을 준수하여 서비스를
-            운영할 예정입니다.
-
-            <br><br>
-
-            플레이어의 정보는 서비스 기능에
-            필요한 범위에서만 사용하며,
-            불필요한 개인정보를 수집하거나
-            저장하지 않는 것을 원칙으로 합니다.
-
-        </p>
-
-    </section>
-
-
-    <footer>
-
-        NOVA VALORANT COMMUNITY
-
-        <br>
-
-        VALORANT 티어 인증 프로토타입
-
-    </footer>
+    <div class="footer">
+        NOVA는 Riot Games와 별개의 커뮤니티입니다.<br>
+        Riot Games 및 VALORANT 관련 상표와 콘텐츠의 권리는 해당 권리자에게 있습니다.
+    </div>
 
 </div>
 
@@ -427,14 +308,64 @@ HTML = """
 """
 
 
-@app.route("/")
+@app.route("/", methods=["GET", "POST"])
 def home():
-    return render_template_string(HTML)
+
+    result = None
+    result_title = None
+    result_type = "warning"
+    rank = None
+
+    if request.method == "POST":
+
+        game_name = request.form.get("game_name", "").strip()
+        tag_line = request.form.get("tag_line", "").strip()
+        region = request.form.get("region", "kr")
+
+        if not game_name or not tag_line:
+
+            result_title = "입력 확인"
+            result = "라이엇 ID와 태그를 모두 입력해주세요."
+            result_type = "error"
+
+        elif not RIOT_API_KEY:
+
+            result_title = "티어 인증 프로토타입"
+            result = (
+                "현재 NOVA 티어 인증 시스템은 Riot Games API 연동을 위한 "
+                "프로토타입으로 구성되어 있습니다. "
+                "Riot API 인증 키가 서버 환경변수에 설정되면 실제 API 연동을 진행할 수 있습니다."
+            )
+            result_type = "warning"
+
+        else:
+
+            result_title = "인증 요청 접수"
+            result = (
+                f"{game_name}#{tag_line} 계정의 "
+                f"VALORANT 정보를 확인하도록 요청했습니다. "
+                f"선택 지역: {region.upper()}"
+            )
+            result_type = "success"
+
+    return render_template_string(
+        HTML,
+        result=result,
+        result_title=result_title,
+        result_type=result_type,
+        rank=rank
+    )
 
 
-port = int(os.environ.get("PORT", "10000"))
+@app.route("/health")
+def health():
+    return "NOVA OK", 200
 
-app.run(
-    host="0.0.0.0",
-    port=port
-)
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 10000))
+
+    app.run(
+        host="0.0.0.0",
+        port=port
+    )
